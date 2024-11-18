@@ -10,4 +10,5 @@ public class AlgorithmsConstant {
     public static final String AES = "AES";
     public static final String BLOWFISH = "Blowfish";
     public static final String TRIPLEDES = "3DES";
+    public static final String RC4 = "RC4";
 }
