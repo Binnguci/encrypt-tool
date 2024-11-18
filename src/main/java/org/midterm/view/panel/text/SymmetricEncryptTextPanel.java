@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.security.NoSuchAlgorithmException;
+import java.util.Set;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SymmetricEncryptTextPanel extends JPanel {
@@ -73,7 +74,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None",AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.DES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -287,15 +288,15 @@ public class SymmetricEncryptTextPanel extends JPanel {
     }
 
     private void toggleShiftField(String algorithm) {
+        Set<String> symmetricAlgorithms = Set.of(
+                AlgorithmsConstant.SHIFT,
+                AlgorithmsConstant.SUBSTITUTION,
+                AlgorithmsConstant.VIGENERE,
+                AlgorithmsConstant.DES,
+                AlgorithmsConstant.AFFINE
+        );
 
-        String[] symmetricAlgorithms = {AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.DES};
-        boolean isSymmetric = false;
-        for (String symAlgo : symmetricAlgorithms) {
-            if (algorithm.equalsIgnoreCase(symAlgo)) {
-                isSymmetric = true;
-                break;
-            }
-        }
+        // Mặc định: vô hiệu hóa tất cả các trường
         shiftField.setEnabled(false);
         modeComboBox.setEnabled(false);
         paddingComboBox.setEnabled(false);
@@ -308,15 +309,25 @@ public class SymmetricEncryptTextPanel extends JPanel {
         copyKeyButton.setEnabled(false);
         copyIvButton.setEnabled(false);
 
-
-        if (isSymmetric) {
+        if (symmetricAlgorithms.contains(algorithm)) {
             switch (algorithm) {
                 case AlgorithmsConstant.SHIFT -> shiftField.setEnabled(true);
+
                 case AlgorithmsConstant.SUBSTITUTION -> {
                     generateKeyButton.setEnabled(true);
                     copyKeyButton.setEnabled(true);
                     keyField.setEditable(true);
                 }
+                case AlgorithmsConstant.AFFINE -> {
+                    modeComboBox.setEnabled(false);
+                    paddingComboBox.setEnabled(false);
+                }
+                case AlgorithmsConstant.VIGENERE -> {
+                    keyField.setEditable(true);
+                    generateKeyButton.setEnabled(true);
+                    copyKeyButton.setEnabled(true);
+                }
+
                 case AlgorithmsConstant.DES -> {
                     modeComboBox.setEnabled(true);
                     paddingComboBox.setEnabled(true);
@@ -329,9 +340,13 @@ public class SymmetricEncryptTextPanel extends JPanel {
                     copyKeyButton.setEnabled(true);
                     copyIvButton.setEnabled(true);
                 }
-            }
 
+                default -> {
+                    // Nếu cần xử lý bổ sung cho các thuật toán khác
+                }
+            }
         } else {
+            // Các thuật toán không đối xứng hoặc mặc định khác
             modeComboBox.setEnabled(true);
             paddingComboBox.setEnabled(true);
             keySizeField.setEnabled(true);
@@ -340,6 +355,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
             ivField.setEditable(true);
         }
     }
+
 
 
     private void addPlaceholder(JTextArea textArea, String placeholder) {
