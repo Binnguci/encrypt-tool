@@ -6,6 +6,7 @@ import org.midterm.model.InformationData;
 import org.midterm.service.encryption.symmetric_encryption.classic.AffineCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.ShiftCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.SubstitutionCipher;
+import org.midterm.service.encryption.symmetric_encryption.classic.Vigenere;
 import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
 
 import javax.crypto.SecretKey;
@@ -30,6 +31,10 @@ public class SymmetricTextController {
                 key = substitutionCipher.generateRandomKey(language);
                 keyField.setText(key);
                 break;
+            case AlgorithmsConstant.VIGENERE:
+                Vigenere vigenere = Vigenere.create();
+                key = vigenere.generateRandomKey(language, 10);
+                keyField.setText(key);
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 key = dataEncryptionStandard.generateKey();
@@ -79,6 +84,10 @@ public class SymmetricTextController {
                 AffineCipher affineCipher = AffineCipher.create();
                 result = affineCipher.encrypt(inputText, informationData.getAMultiplier(), informationData.getBShift(), language);
                 break;
+            case AlgorithmsConstant.VIGENERE:
+                Vigenere vigenere = Vigenere.create();
+                result = vigenere.encrypt(inputText, key, language);
+                break;
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 try {
@@ -123,6 +132,10 @@ public class SymmetricTextController {
             case AlgorithmsConstant.AFFINE:
                 AffineCipher affineCipher = AffineCipher.create();
                 result = affineCipher.decrypt(inputText, informationData.getAMultiplier(), informationData.getBShift(), language);
+                break;
+            case AlgorithmsConstant.VIGENERE:
+                Vigenere vigenere = Vigenere.create();
+                result = vigenere.decrypt(inputText, key, language);
                 break;
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
