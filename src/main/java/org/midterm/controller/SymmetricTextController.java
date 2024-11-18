@@ -42,17 +42,15 @@ public class SymmetricTextController {
         }
     }
 
-    public static void generateIV(String algorithm, JTextField ivField) {
+    public static void generateIV(String algorithm, int sizeKey, JTextField ivField) {
         String iv = "";
         switch (algorithm) {
-            case AlgorithmsConstant.SHIFT:
-                break;
-            case AlgorithmsConstant.SUBSTITUTION:
-                break;
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
-                iv = dataEncryptionStandard.generateIv();
+                iv = dataEncryptionStandard.generateIv(sizeKey);
                 ivField.setText(iv);
+            default:
+                break;
         }
     }
 
@@ -91,12 +89,7 @@ public class SymmetricTextController {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 try {
-                    IvParameterSpec ivParameterSpec = null;
-                    if (!(mode.equalsIgnoreCase("ECB") || mode.equalsIgnoreCase("None")) || iv == null) {
-                        ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
-                    }
-                    SecretKey secretKey = dataEncryptionStandard.convertBase64ToKey(key);
-                    result = dataEncryptionStandard.encryptText(secretKey, inputText, mode, padding, ivParameterSpec);
+                    result = dataEncryptionStandard.encryptText(key, inputText, mode, padding, iv);
                 } catch (Exception e) {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
@@ -140,12 +133,7 @@ public class SymmetricTextController {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 try {
-                    IvParameterSpec ivParameterSpec = null;
-                    if (!(mode.equalsIgnoreCase("ECB") || mode.equalsIgnoreCase("None")) && iv == null) {
-                        ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
-                    }
-                    SecretKey secretKey = dataEncryptionStandard.convertBase64ToKey(key);
-                    result = dataEncryptionStandard.decryptText(inputText, secretKey, ivParameterSpec, mode, padding);
+                    result = dataEncryptionStandard.decryptText(inputText, key, iv, mode, padding);
                 } catch (Exception e) {
                     System.err.println("Error decrypting text: " + e.getMessage());
                 }
