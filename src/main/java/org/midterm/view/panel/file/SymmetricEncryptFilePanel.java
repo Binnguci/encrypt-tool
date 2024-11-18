@@ -106,7 +106,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.DES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.DES, AlgorithmsConstant.TRIPLEDES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -277,10 +277,11 @@ public class SymmetricEncryptFilePanel extends JPanel {
 
     private static void updateKeySize(String algorithm, JComboBox<Integer> keySizeField) {
         switch (algorithm) {
-            case "AES" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128, 192, 256}));
-            case "DES" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{56}));
-            case "Blowfish" ->
+            case AlgorithmsConstant.AES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128, 192, 256}));
+            case AlgorithmsConstant.DES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{56}));
+            case AlgorithmsConstant.BLOWFISH ->
                     keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{32, 64, 128, 192, 256, 448}));
+            case AlgorithmsConstant.TRIPLEDES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{112, 168}));
             case "RC2" ->
                     keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{40, 56, 64, 128, 192, 256, 512, 1024}));
             case "IDEA" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128}));

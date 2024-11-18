@@ -19,7 +19,7 @@ public class BlowFish {
     }
 
     public static String generateIv() {
-        byte[] iv = new byte[8]; // Kích thước IV của Blowfish là 8 byte
+        byte[] iv = new byte[8];
         new SecureRandom().nextBytes(iv);
         return Base64.getEncoder().encodeToString(iv);
     }
@@ -35,7 +35,7 @@ public class BlowFish {
         return new IvParameterSpec(decodedIv);
     }
 
-    public String encryptText(String secretKeyBase64, String plainText, String mode, String padding, String base64Iv)
+    public String encryptText(String base64Iv, String secretKeyBase64, String plainText, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
@@ -69,7 +69,7 @@ public class BlowFish {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    public String decryptText(String cipherTextBase64, String secretKeyBase64, String base64Iv, String mode, String padding)
+    public String decryptText(String base64Iv, String secretKeyBase64,String cipherTextBase64,  String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 

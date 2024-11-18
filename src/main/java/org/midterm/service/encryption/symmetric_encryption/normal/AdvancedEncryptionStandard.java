@@ -79,7 +79,7 @@ public class AdvancedEncryptionStandard {
     }
 
 
-    public String decryptText(String cipherTextBase64, String secretKeyBase64, String base64Iv, String mode, String padding) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public String decryptText(String base64Iv,String secretKeyBase64,String cipherTextBase64,   String mode, String padding) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
 
         if (cipherTextBase64 == null || cipherTextBase64.isEmpty()) {
             throw new IllegalArgumentException("Cipher text không được rỗng hoặc null.");
