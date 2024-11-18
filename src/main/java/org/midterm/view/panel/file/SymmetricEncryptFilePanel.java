@@ -106,7 +106,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.DES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.DES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -195,8 +195,10 @@ public class SymmetricEncryptFilePanel extends JPanel {
 
         add(paddedPanel, BorderLayout.NORTH);
         generateKeyButton.addActionListener(e -> {
+            String algorithm = (String) algorithmComboBox.getSelectedItem();
+            int keySize = (int) keySizeField.getSelectedItem();
             try {
-                SymmetricFileController.generateKey((String) algorithmComboBox.getSelectedItem(), keyField);
+                SymmetricFileController.generateKey((String) algorithmComboBox.getSelectedItem(), keySize, keyField);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
