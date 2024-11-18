@@ -32,6 +32,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
     JTextField keyField;
     JTextField ivField;
     JButton encryptButton;
+    JButton resetIvButton;
     JButton decryptButton;
     JTextArea resultArea;
     JComboBox<Integer> keySizeField;
@@ -39,7 +40,6 @@ public class SymmetricEncryptTextPanel extends JPanel {
     JButton generateKeyButton;
     JButton generateIvButton;
     JButton copyKeyButton;
-    JButton copyIvButton;
     JButton saveKeyButton;
     JComboBox<String> aComboBox;
     JComboBox<String> bComboBox;
@@ -74,7 +74,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES, AlgorithmsConstant.AES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -156,11 +156,11 @@ public class SymmetricEncryptTextPanel extends JPanel {
         JPanel ivButtonPanel = new JPanel(new BorderLayout());
         ivButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         generateIvButton = new JButton("Generate IV");
-        copyIvButton = new JButton("Copy");
+        resetIvButton = new JButton("Reset");
         CustomColorButton.setButtonPressColor(generateIvButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(copyIvButton, "#F26680", Color.WHITE);
+        CustomColorButton.setButtonPressColor(resetIvButton, "#F26680", Color.WHITE);
         ivButtonPanel.add(generateIvButton);
-        ivButtonPanel.add(copyIvButton);
+        ivButtonPanel.add(resetIvButton);
         mainPanel.add(ivButtonPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
@@ -206,19 +206,24 @@ public class SymmetricEncryptTextPanel extends JPanel {
             SymmetricTextController.encrypt(data, resultArea);
         });
 
-
-
         decryptButton.addActionListener(e -> {
             InformationData data = collectionData();
             SymmetricTextController.decrypt(data, resultArea);
         });
 
+        resetIvButton.addActionListener(e -> {
+            ivField.setText("");
+        });
+
         generateKeyButton.addActionListener(e -> {
             String algorithm = (String) algorithmComboBox.getSelectedItem();
             String language = (String) languageComboBox.getSelectedItem();
+            Integer keySize = (Integer) keySizeField.getSelectedItem();
             try {
-                SymmetricTextController.generateKey(algorithm, language, keyField);
+                SymmetricTextController.generateKey(algorithm, language, keySize, keyField);
             } catch (NoSuchAlgorithmException ex) {
+                throw new RuntimeException(ex);
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
         });
@@ -227,7 +232,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         generateIvButton.addActionListener(e -> {
             String algorithm = (String) algorithmComboBox.getSelectedItem();
             Integer ivSize = (Integer) ivSizeField.getSelectedItem();
-            SymmetricTextController.generateIV(algorithm,ivSize, ivField);
+            SymmetricTextController.generateIV(algorithm, ivSize, ivField);
         });
 
         copyKeyButton.addActionListener(e -> {
@@ -252,7 +257,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 keyButtonPanel.setVisible(false);
                 ivPanel.setVisible(false);
                 ivButtonPanel.setVisible(false);
-            } else {
+            }
+            else {
                 affinePanel.setVisible(false);
                 keyPanel.setVisible(true);
                 keyButtonPanel.setVisible(true);
@@ -269,13 +275,13 @@ public class SymmetricEncryptTextPanel extends JPanel {
 
         modeComboBox.addActionListener(e -> {
             String selectedMode = (String) modeComboBox.getSelectedItem();
-            updateIvSize(selectedMode, ivSizeField);
+            updateIvSize(getSelectedMode(), ivSizeField, generateIvButton, resetIvButton);
             if (selectedMode.equalsIgnoreCase("ECB")) {
                 ivField.setText("");
                 ivField.setEditable(false);
                 ivSizeField.setEnabled(false);
                 generateIvButton.setEnabled(false);
-                copyIvButton.setEnabled(false);
+                resetIvButton.setEnabled(false);
             }
         });
 
@@ -308,7 +314,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
             modeComboBox.setSelectedIndex(0);
             paddingComboBox.setSelectedIndex(0);
         });
-        copyBtn.addActionListener(e ->{
+        copyBtn.addActionListener(e -> {
             String resultText = resultArea.getText();
             if (resultText != null && !resultText.isEmpty()) {
                 copyToClipboard(resultText);
@@ -338,6 +344,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 AlgorithmsConstant.SUBSTITUTION,
                 AlgorithmsConstant.VIGENERE,
                 AlgorithmsConstant.DES,
+                AlgorithmsConstant.AES,
                 AlgorithmsConstant.AFFINE
         );
 
@@ -352,7 +359,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         generateKeyButton.setEnabled(false);
         generateIvButton.setEnabled(false);
         copyKeyButton.setEnabled(false);
-        copyIvButton.setEnabled(false);
+        resetIvButton.setEnabled(false);
         languageComboBox.setEnabled(true);
 
         if (symmetricAlgorithms.contains(algorithm)) {
@@ -374,7 +381,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
                     copyKeyButton.setEnabled(true);
                 }
 
-                case AlgorithmsConstant.DES -> {
+                case AlgorithmsConstant.DES, AlgorithmsConstant.AES -> {
                     languageComboBox.setEnabled(false);
                     modeComboBox.setEnabled(true);
                     paddingComboBox.setEnabled(true);
@@ -385,15 +392,13 @@ public class SymmetricEncryptTextPanel extends JPanel {
                     generateKeyButton.setEnabled(true);
                     generateIvButton.setEnabled(true);
                     copyKeyButton.setEnabled(true);
-                    copyIvButton.setEnabled(true);
+                    resetIvButton.setEnabled(true);
                 }
 
                 default -> {
-                    // Nếu cần xử lý bổ sung cho các thuật toán khác
                 }
             }
         } else {
-            // Các thuật toán không đối xứng hoặc mặc định khác
             modeComboBox.setEnabled(true);
             paddingComboBox.setEnabled(true);
             keySizeField.setEnabled(true);
@@ -403,7 +408,6 @@ public class SymmetricEncryptTextPanel extends JPanel {
             languageComboBox.setEnabled(true);
         }
     }
-
 
 
     private void addPlaceholder(JTextArea textArea, String placeholder) {
@@ -466,11 +470,29 @@ public class SymmetricEncryptTextPanel extends JPanel {
         }
     }
 
-    private static void updateIvSize(String mode, JComboBox<Integer> ivSizeField) {
+    private static void updateIvSize(String mode, JComboBox<Integer> ivSizeField, JButton generateIvButton, JButton copyIvButton) {
+        if (mode == null || mode.isEmpty() || mode.equalsIgnoreCase("None")) {
+            ivSizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{}));
+            ivSizeField.setEnabled(false);
+            generateIvButton.setEnabled(false);
+            copyIvButton.setEnabled(false);
+            return;
+        }
+
         switch (mode) {
-            case "ECB" -> ivSizeField.setEnabled(false);
+            case "CBC", "CFB", "OFB", "CTR", "GCM" -> {
+                ivSizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128}));
+                ivSizeField.setEnabled(true);
+                generateIvButton.setEnabled(true);
+                copyIvButton.setEnabled(true);
+            }
+            default -> {
+                ivSizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{}));
+                ivSizeField.setEnabled(false);
+            }
         }
     }
+
 
     public String getInputText() {
         return textArea.getText();

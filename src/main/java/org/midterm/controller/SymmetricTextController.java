@@ -7,13 +7,10 @@ import org.midterm.service.encryption.symmetric_encryption.classic.AffineCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.ShiftCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.SubstitutionCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.Vigenere;
+import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
 import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.swing.*;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 public class SymmetricTextController {
 
@@ -21,7 +18,7 @@ public class SymmetricTextController {
         throw new AssertionError("Cannot be instantiated");
     }
 
-    public static void generateKey(String algorithm, String language, JTextField keyField) throws NoSuchAlgorithmException {
+    public static void generateKey(String algorithm, String language, Integer keySize, JTextField keyField) throws Exception {
         String key = "";
         switch (algorithm) {
             case AlgorithmsConstant.SHIFT:
@@ -39,6 +36,10 @@ public class SymmetricTextController {
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 key = dataEncryptionStandard.generateKey();
                 keyField.setText(key);
+            case AlgorithmsConstant.AES:
+                AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
+                key = AES.generateKey(keySize);
+                keyField.setText(key);
         }
     }
 
@@ -48,6 +49,10 @@ public class SymmetricTextController {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 iv = dataEncryptionStandard.generateIv(sizeKey);
+                ivField.setText(iv);
+            case AlgorithmsConstant.AES:
+                AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
+                iv = AES.generateIv(sizeKey);
                 ivField.setText(iv);
             default:
                 break;
@@ -94,6 +99,13 @@ public class SymmetricTextController {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
                 break;
+            case AlgorithmsConstant.AES:
+                try {
+                    AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
+                    result = AES.encryptText(iv, key, inputText, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error encrypting text: " + e.getMessage());
+                }
         }
         resultArea.setText(result);
     }
@@ -138,6 +150,13 @@ public class SymmetricTextController {
                     System.err.println("Error decrypting text: " + e.getMessage());
                 }
                 break;
+            case AlgorithmsConstant.AES:
+                try {
+                    AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
+                    result = AES.decryptText(inputText, key, iv, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error decrypting text: " + e.getMessage());
+                }
         }
 
         resultArea.setText(result);
