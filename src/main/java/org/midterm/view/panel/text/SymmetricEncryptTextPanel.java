@@ -74,7 +74,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -193,11 +193,20 @@ public class SymmetricEncryptTextPanel extends JPanel {
 
         encryptButton.addActionListener(e -> {
             InformationData data = collectionData();
+            String selectMode = (String) modeComboBox.getSelectedItem();
+            String selectPadding = (String) paddingComboBox.getSelectedItem();
+            if ("None".equalsIgnoreCase(selectMode) && "None".equalsIgnoreCase(selectPadding)) {
+            } else if (selectMode != null && "None".equalsIgnoreCase(selectPadding)) {
+                JOptionPane.showMessageDialog(null, "Padding không được để trống!");
+            } else if ("None".equalsIgnoreCase(selectMode) && selectPadding != null) {
+                JOptionPane.showMessageDialog(null, "Sai chế độ mã hóa!");
+            }
+
+
             SymmetricTextController.encrypt(data, resultArea);
         });
 
-        JPanel buttonCopy = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
 
         decryptButton.addActionListener(e -> {
             InformationData data = collectionData();
@@ -217,7 +226,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
 
         generateIvButton.addActionListener(e -> {
             String algorithm = (String) algorithmComboBox.getSelectedItem();
-            SymmetricTextController.generateIV(algorithm, ivField);
+            Integer ivSize = (Integer) ivSizeField.getSelectedItem();
+            SymmetricTextController.generateIV(algorithm,ivSize, ivField);
         });
 
         copyKeyButton.addActionListener(e -> {
@@ -258,8 +268,15 @@ public class SymmetricEncryptTextPanel extends JPanel {
 
 
         modeComboBox.addActionListener(e -> {
-            String selectedAlgorithm = (String) modeComboBox.getSelectedItem();
-            updateIvSize(selectedAlgorithm, ivSizeField);
+            String selectedMode = (String) modeComboBox.getSelectedItem();
+            updateIvSize(selectedMode, ivSizeField);
+            if (selectedMode.equalsIgnoreCase("ECB")) {
+                ivField.setText("");
+                ivField.setEditable(false);
+                ivSizeField.setEnabled(false);
+                generateIvButton.setEnabled(false);
+                copyIvButton.setEnabled(false);
+            }
         });
 
         saveKeyButton.addActionListener(e -> {
@@ -273,9 +290,37 @@ public class SymmetricEncryptTextPanel extends JPanel {
             }
         });
 
-
+        JPanel buttonCopy = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         JButton copyBtn = new JButton("Copy");
+        JButton resetButton = new JButton("Reset");
+        CustomColorButton.setButtonPressColor(copyBtn, "#F26680", Color.WHITE);
+        CustomColorButton.setButtonPressColor(resetButton, "#F26680", Color.WHITE);
         buttonCopy.add(copyBtn);
+        buttonCopy.add(resetButton);
+
+        resetButton.addActionListener(e -> {
+            textArea.setText("");
+            resultArea.setText("");
+            keyField.setText("");
+            ivField.setText("");
+            algorithmComboBox.setSelectedIndex(0);
+            modeComboBox.setSelectedIndex(0);
+            paddingComboBox.setSelectedIndex(0);
+        });
+        copyBtn.addActionListener(e ->{
+            String resultText = resultArea.getText();
+            if (resultText != null && !resultText.isEmpty()) {
+                copyToClipboard(resultText);
+                String originalText = copyBtn.getText();
+                copyBtn.setText("Copied!");
+                Timer timer = new Timer(2000, evt -> copyBtn.setText(originalText));
+                timer.setRepeats(false);
+                timer.start();
+            } else {
+                JOptionPane.showMessageDialog(null, "Kết quả trống, không thể sao chép!");
+            }
+        });
 
         buttonCopy.setAlignmentX(Component.CENTER_ALIGNMENT);
         mainPanel.add(buttonCopy);
@@ -308,6 +353,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         generateIvButton.setEnabled(false);
         copyKeyButton.setEnabled(false);
         copyIvButton.setEnabled(false);
+        languageComboBox.setEnabled(true);
 
         if (symmetricAlgorithms.contains(algorithm)) {
             switch (algorithm) {
@@ -329,6 +375,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 }
 
                 case AlgorithmsConstant.DES -> {
+                    languageComboBox.setEnabled(false);
                     modeComboBox.setEnabled(true);
                     paddingComboBox.setEnabled(true);
                     keySizeField.setEnabled(true);
@@ -353,6 +400,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
             ivSizeField.setEnabled(true);
             keyField.setEditable(true);
             ivField.setEditable(true);
+            languageComboBox.setEnabled(true);
         }
     }
 

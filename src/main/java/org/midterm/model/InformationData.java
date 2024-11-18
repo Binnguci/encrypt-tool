@@ -17,6 +17,8 @@ public class InformationData {
     String key;
     String iv;
     Integer aMultiplier;
+    String filePath;
+    String resultFilePath;
     Integer bShift;
     String language;
     String inputFilePath;
