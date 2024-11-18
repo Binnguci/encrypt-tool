@@ -1,7 +1,8 @@
-package org.midterm.service.encryption.symmetric_encryption.impl;
+package org.midterm.service.encryption.symmetric_encryption.normal;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -28,43 +29,76 @@ public class DataEncryptionStandard {
         return Base64.getEncoder().encodeToString(iv);
     }
 
-    public String encryptText(IvParameterSpec iv, SecretKey secretKey, String plainText, String mode, String padding)
+    public SecretKey convertBase64ToKey(String base64Key) {
+        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
+        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "DES");
+    }
+
+    public String encryptText(SecretKey secretKey, String plainText, String mode, String padding, IvParameterSpec iv)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
-        String transformation = "DES/" + mode + "/" + padding;
-        Cipher cipher = Cipher.getInstance(transformation);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+        String transformation = "DES";
+        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
+            transformation += "/" + mode;
+            if (padding != null && !padding.isEmpty()) {
+                transformation += "/" + padding;
+            }
+        }
 
+        Cipher cipher = Cipher.getInstance(transformation);
+        if (mode.equalsIgnoreCase("ECB")) {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        } else {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+        }
         byte[] cipherText = cipher.doFinal(plainText.getBytes());
-        String encodedIv = Base64.getEncoder().encodeToString(iv.getIV());
         String encodedCipherText = Base64.getEncoder().encodeToString(cipherText);
 
-        return encodedIv + ":" + encodedCipherText;
+        return (mode.equalsIgnoreCase("ECB") ? "" : Base64.getEncoder().encodeToString(iv.getIV()) + ":") + encodedCipherText;
     }
 
 
-    public String decryptText(String combinedCipherText, SecretKey secretKey, String mode, String padding)
+    public String decryptText(String combinedCipherText, SecretKey secretKey, IvParameterSpec iv, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
-        String[] parts = combinedCipherText.split(":");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid cipher text format");
+        String transformation = "DES";
+        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
+            transformation += "/" + mode;
+            if (padding != null && !padding.isEmpty()) {
+                transformation += "/" + padding;
+            }
         }
-        byte[] ivBytes = Base64.getDecoder().decode(parts[0]);
-        byte[] cipherTextBytes = Base64.getDecoder().decode(parts[1]);
-        IvParameterSpec iv = new IvParameterSpec(ivBytes);
-        String transformation = "DES/" + mode + "/" + padding;
         Cipher cipher = Cipher.getInstance(transformation);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-        byte[] plainText = cipher.doFinal(cipherTextBytes);
-        return new String(plainText);
+        if (mode.equalsIgnoreCase("ECB")) {
+            // ECB không sử dụng IV
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
+            byte[] cipherTextBytes = Base64.getDecoder().decode(combinedCipherText);
+            byte[] plainText = cipher.doFinal(cipherTextBytes);
+            return new String(plainText);
+        } else {
+            // Với các chế độ khác cần sử dụng IV
+            if (iv == null) {
+                throw new IllegalArgumentException("IV must not be null for " + mode + " mode");
+            }
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
+            byte[] cipherTextBytes = Base64.getDecoder().decode(combinedCipherText);
+            byte[] plainText = cipher.doFinal(cipherTextBytes);
+            return new String(plainText);
+        }
     }
 
 
     public void encryptFile(IvParameterSpec iv, SecretKey secretKey, File inputFile, File outputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
-        String transformation = "DES/" + mode + "/" + padding;
+        String transformation = "DES";
+        if ((mode != null && !mode.isEmpty()) || (!mode.equalsIgnoreCase("None"))) {
+            transformation += "/" + mode;
+            if (padding != null && !padding.isEmpty()) {
+                transformation += "/" + padding;
+            }
+        }
+
         Cipher cipher = Cipher.getInstance(transformation);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
         try (InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
@@ -89,7 +123,15 @@ public class DataEncryptionStandard {
     public void decryptFile(SecretKey secretKey, File inputFile, File outputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
-        String transformation = "DES/" + mode + "/" + padding;
+        String transformation = "DES";
+
+        if (mode != null && !mode.isEmpty()) {
+            transformation += "/" + mode;
+            if (padding != null && !padding.isEmpty()) {
+                transformation += "/" + padding;
+            }
+        }
+
         Cipher cipher = Cipher.getInstance(transformation);
         try (InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
              OutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile))) {

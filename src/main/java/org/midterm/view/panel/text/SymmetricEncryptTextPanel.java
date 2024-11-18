@@ -40,6 +40,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
     JButton copyKeyButton;
     JButton copyIvButton;
     JButton saveKeyButton;
+    JComboBox<String> aComboBox;
+    JComboBox<String> bComboBox;
 
     public SymmetricEncryptTextPanel() {
         setLayout(new BorderLayout(0, 0));
@@ -65,15 +67,13 @@ public class SymmetricEncryptTextPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Text"));
         scrollPane.setPreferredSize(new Dimension(500, 100));
-
         mainPanel.add(scrollPane);
-
 
         JPanel optionsPanel = new JPanel();
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.DES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None",AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.DES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -81,7 +81,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         optionsPanel.add(modeComboBox);
 
         optionsPanel.add(new JLabel("Padding:"));
-        paddingComboBox = new JComboBox<>(new String[]{"PKCS5Padding", "PKCS7Padding", "NoPadding"});
+        paddingComboBox = new JComboBox<>(new String[]{"None", "PKCS5Padding", "PKCS7Padding", "NoPadding"});
         optionsPanel.add(paddingComboBox);
 
         optionsPanel.add(new JLabel("Shift:"));
@@ -104,6 +104,19 @@ public class SymmetricEncryptTextPanel extends JPanel {
         keyField = new JTextField();
         keyField.setEditable(true);
         keyField.setBorder(BorderFactory.createTitledBorder("Key"));
+
+        String[] validA = {"1", "3", "5", "7", "9", "11"}; // Các giá trị a hợp lệ
+        String[] validB = {"0", "5", "10", "15", "20"};    // Giá trị b
+        aComboBox = new JComboBox<>(validA);
+        bComboBox = new JComboBox<>(validB);
+        JPanel affinePanel = new JPanel(new FlowLayout());
+        affinePanel.add(new JLabel("Choose a for multiplication:"));
+        affinePanel.add(aComboBox);
+        affinePanel.add(new JLabel("Choose b for shift:"));
+        affinePanel.add(bComboBox);
+        affinePanel.setVisible(false);
+        mainPanel.add(affinePanel, BorderLayout.CENTER);
+
         keySizeField = new JComboBox<>(new Integer[]{128, 192, 256});
         JPanel keySizePanel = new JPanel(new BorderLayout());
         keySizePanel.add(new JLabel("Key Size:"));
@@ -125,7 +138,6 @@ public class SymmetricEncryptTextPanel extends JPanel {
         keyButtonPanel.add(copyKeyButton);
         keyButtonPanel.add(saveKeyButton);
         mainPanel.add(keyButtonPanel, BorderLayout.CENTER);
-
 
         JPanel ivPanel = new JPanel(new BorderLayout());
         ivField = new JTextField();
@@ -182,6 +194,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
             InformationData data = collectionData();
             SymmetricTextController.encrypt(data, resultArea);
         });
+
         JPanel buttonCopy = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
@@ -199,6 +212,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 throw new RuntimeException(ex);
             }
         });
+
 
         generateIvButton.addActionListener(e -> {
             String algorithm = (String) algorithmComboBox.getSelectedItem();
@@ -221,12 +235,26 @@ public class SymmetricEncryptTextPanel extends JPanel {
 
         algorithmComboBox.addActionListener(e -> {
             String selectedAlgorithm = (String) algorithmComboBox.getSelectedItem();
+            if (selectedAlgorithm.equalsIgnoreCase(AlgorithmsConstant.AFFINE)) {
+                affinePanel.setVisible(true);
+                keyPanel.setVisible(false);
+                keyButtonPanel.setVisible(false);
+                ivPanel.setVisible(false);
+                ivButtonPanel.setVisible(false);
+            } else {
+                affinePanel.setVisible(false);
+                keyPanel.setVisible(true);
+                keyButtonPanel.setVisible(true);
+                ivPanel.setVisible(true);
+                ivButtonPanel.setVisible(true);
+            }
             if (selectedAlgorithm != null) {
                 String savedKey = KeyManager.loadKey(selectedAlgorithm);
                 keyField.setText(savedKey);
                 updateKeySize(selectedAlgorithm, keySizeField);
             }
         });
+
 
         modeComboBox.addActionListener(e -> {
             String selectedAlgorithm = (String) modeComboBox.getSelectedItem();
@@ -349,7 +377,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         switch (algorithm) {
             case "AES", "DES", "Blowfish", "RC2", "IDEA" -> {
                 modeComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"None", "ECB", "CBC", "CFB", "OFB", "CTR", "GCM"}));
-                paddingComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"PKCS5Padding", "PKCS7Padding", "ISO10126Padding", "ZeroPadding", "NoPadding"}));
+                paddingComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"None", "PKCS5Padding", "PKCS7Padding", "ISO10126Padding", "ZeroPadding", "NoPadding"}));
             }
             case "RC4" -> {
                 modeComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"ECB"}));
@@ -396,6 +424,15 @@ public class SymmetricEncryptTextPanel extends JPanel {
         }
     }
 
+    public Integer getSelectedMultiplier() {
+        return Integer.parseInt((String) aComboBox.getSelectedItem());
+    }
+
+    public Integer getSelectedShift() {
+        return Integer.parseInt((String) bComboBox.getSelectedItem());
+    }
+
+
     public String getSelectedPadding() {
         if (paddingComboBox.isEnabled()) {
             return (String) paddingComboBox.getSelectedItem();
@@ -436,6 +473,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 .key(getKey())
                 .iv(getIV())
                 .inputText(getInputText())
+                .aMultiplier(getSelectedMultiplier())
+                .bShift(getSelectedShift())
                 .build();
     }
 
@@ -444,6 +483,5 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 e -> actionListener.actionPerformed(new ActionEvent(this, 0, "encrypt"))
         );
     }
-
 
 }

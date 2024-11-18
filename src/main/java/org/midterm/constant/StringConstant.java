@@ -1,7 +1,7 @@
 package org.midterm.constant;
 
 public class StringConstant {
-    public static final String ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static final String ENGLISH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?";
     public static final String NUMBERS = "0123456789";
     public static final String LANGUAGE_ENGLISH = "ENGLISH";
     public static final String LANGUAGE_VIETNAMESE = "VIETNAMESE";

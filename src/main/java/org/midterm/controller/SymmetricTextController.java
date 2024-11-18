@@ -3,12 +3,16 @@ package org.midterm.controller;
 import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.constant.StringConstant;
 import org.midterm.model.InformationData;
+import org.midterm.service.encryption.symmetric_encryption.classic.AffineCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.ShiftCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.SubstitutionCipher;
-import org.midterm.service.encryption.symmetric_encryption.impl.DataEncryptionStandard;
+import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.swing.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class SymmetricTextController {
 
@@ -71,7 +75,23 @@ public class SymmetricTextController {
                 SubstitutionCipher substitutionCipher = SubstitutionCipher.create();
                 result = substitutionCipher.encrypt(inputText, key, language);
                 break;
-
+            case AlgorithmsConstant.AFFINE:
+                AffineCipher affineCipher = AffineCipher.create();
+                result = affineCipher.encrypt(inputText, informationData.getAMultiplier(), informationData.getBShift(), language);
+                break;
+            case AlgorithmsConstant.DES:
+                DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
+                try {
+                    IvParameterSpec ivParameterSpec = null;
+                    if (!(mode.equalsIgnoreCase("ECB") || mode.equalsIgnoreCase("None")) || iv == null) {
+                        ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
+                    }
+                    SecretKey secretKey = dataEncryptionStandard.convertBase64ToKey(key);
+                    result = dataEncryptionStandard.encryptText(secretKey, inputText, mode, padding, ivParameterSpec);
+                } catch (Exception e) {
+                    System.err.println("Error encrypting text: " + e.getMessage());
+                }
+                break;
         }
         resultArea.setText(result);
     }
@@ -99,6 +119,23 @@ public class SymmetricTextController {
             case AlgorithmsConstant.SUBSTITUTION:
                 SubstitutionCipher substitutionCipher = SubstitutionCipher.create();
                 result = substitutionCipher.decrypt(inputText, key, language);
+                break;
+            case AlgorithmsConstant.AFFINE:
+                AffineCipher affineCipher = AffineCipher.create();
+                result = affineCipher.decrypt(inputText, informationData.getAMultiplier(), informationData.getBShift(), language);
+                break;
+            case AlgorithmsConstant.DES:
+                DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
+                try {
+                    IvParameterSpec ivParameterSpec = null;
+                    if (!(mode.equalsIgnoreCase("ECB") || mode.equalsIgnoreCase("None")) && iv == null) {
+                        ivParameterSpec = new IvParameterSpec(Base64.getDecoder().decode(iv));
+                    }
+                    SecretKey secretKey = dataEncryptionStandard.convertBase64ToKey(key);
+                    result = dataEncryptionStandard.decryptText(inputText, secretKey, ivParameterSpec, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error decrypting text: " + e.getMessage());
+                }
                 break;
         }
 
