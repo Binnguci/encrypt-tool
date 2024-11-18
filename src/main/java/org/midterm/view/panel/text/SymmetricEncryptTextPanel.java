@@ -74,7 +74,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES, AlgorithmsConstant.AES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES, AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -345,7 +345,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 AlgorithmsConstant.VIGENERE,
                 AlgorithmsConstant.DES,
                 AlgorithmsConstant.AES,
-                AlgorithmsConstant.AFFINE
+                AlgorithmsConstant.AFFINE,
+                AlgorithmsConstant.BLOWFISH
         );
 
         // Mặc định: vô hiệu hóa tất cả các trường
@@ -381,7 +382,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
                     copyKeyButton.setEnabled(true);
                 }
 
-                case AlgorithmsConstant.DES, AlgorithmsConstant.AES -> {
+                case AlgorithmsConstant.DES, AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH -> {
                     languageComboBox.setEnabled(false);
                     modeComboBox.setEnabled(true);
                     paddingComboBox.setEnabled(true);

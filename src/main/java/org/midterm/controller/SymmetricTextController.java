@@ -8,6 +8,7 @@ import org.midterm.service.encryption.symmetric_encryption.classic.ShiftCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.SubstitutionCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.Vigenere;
 import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
+import org.midterm.service.encryption.symmetric_encryption.normal.BlowFish;
 import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
 
 import javax.swing.*;
@@ -40,6 +41,10 @@ public class SymmetricTextController {
                 AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
                 key = AES.generateKey(keySize);
                 keyField.setText(key);
+            case AlgorithmsConstant.BLOWFISH:
+                BlowFish blowFish = BlowFish.create();
+                key = blowFish.generateKey(keySize);
+                keyField.setText(key);
         }
     }
 
@@ -53,6 +58,10 @@ public class SymmetricTextController {
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
                 iv = AES.generateIv(sizeKey);
+                ivField.setText(iv);
+            case AlgorithmsConstant.BLOWFISH:
+                BlowFish blowFish = BlowFish.create();
+                iv = blowFish.generateIv();
                 ivField.setText(iv);
             default:
                 break;
@@ -103,6 +112,13 @@ public class SymmetricTextController {
                 try {
                     AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
                     result = AES.encryptText(iv, key, inputText, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error encrypting text: " + e.getMessage());
+                }
+            case AlgorithmsConstant.BLOWFISH:
+                try {
+                    BlowFish blowFish = BlowFish.create();
+                    result = blowFish.encryptText(key, inputText, mode, padding, iv);
                 } catch (Exception e) {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
@@ -157,8 +173,14 @@ public class SymmetricTextController {
                 } catch (Exception e) {
                     System.err.println("Error decrypting text: " + e.getMessage());
                 }
+            case AlgorithmsConstant.BLOWFISH:
+                try {
+                    BlowFish blowFish = BlowFish.create();
+                    result = blowFish.decryptText(inputText, key, iv, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error decrypting text: " + e.getMessage());
+                }
         }
-
         resultArea.setText(result);
     }
 }

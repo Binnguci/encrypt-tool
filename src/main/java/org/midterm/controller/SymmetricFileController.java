@@ -3,6 +3,7 @@ package org.midterm.controller;
 import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.model.InformationData;
 import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
+import org.midterm.service.encryption.symmetric_encryption.normal.BlowFish;
 import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
 
 import javax.crypto.BadPaddingException;
@@ -30,6 +31,10 @@ public class SymmetricFileController {
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 key = advancedEncryptionStandard.generateKey(keySize);
                 keyField.setText(key);
+            case AlgorithmsConstant.BLOWFISH:
+                BlowFish blowFish = BlowFish.create();
+                key = blowFish.generateKey(keySize);
+                keyField.setText(key);
         }
     }
 
@@ -43,6 +48,10 @@ public class SymmetricFileController {
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 iv = advancedEncryptionStandard.generateIv(ivSize);
+                ivField.setText(iv);
+            case AlgorithmsConstant.BLOWFISH:
+                BlowFish blowFish = BlowFish.create();
+                iv = blowFish.generateIv();
                 ivField.setText(iv);
         }
     }
@@ -64,11 +73,14 @@ public class SymmetricFileController {
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 result = advancedEncryptionStandard.encryptFile(iv, key, filePath, mode, padding);
+            case AlgorithmsConstant.BLOWFISH:
+                BlowFish blowFish = BlowFish.create();
+                result = blowFish.encryptFile(iv, key, filePath, mode, padding);
         }
         outputFile.setText(result);
     }
 
-    public static void decrypt(InformationData informationData) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
+    public static void decrypt(InformationData informationData, JTextField outputFile) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, IOException, BadPaddingException, InvalidKeyException {
         String algorithm = informationData.getAlgorithm();
         String mode = informationData.getMode();
         String padding = informationData.getPadding();
@@ -76,14 +88,19 @@ public class SymmetricFileController {
         String filePath = informationData.getFilePath();
         String base64Iv = informationData.getIv();
         String resultFilePath = informationData.getResultFilePath();
+        String result = "";
 
         switch (algorithm) {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
-                dataEncryptionStandard.decryptFile(base64Iv, key, filePath, mode, padding);
+                result = dataEncryptionStandard.decryptFile(base64Iv, key, filePath, mode, padding);
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
-                advancedEncryptionStandard.decryptFile(base64Iv, key, filePath, mode, padding);
+                result = advancedEncryptionStandard.decryptFile(base64Iv, key, filePath, mode, padding);
+            case AlgorithmsConstant.BLOWFISH:
+                BlowFish blowFish = BlowFish.create();
+                result = blowFish.decryptFile(base64Iv, key, filePath, mode, padding);
         }
+        outputFile.setText(result);
     }
 }

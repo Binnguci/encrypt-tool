@@ -176,7 +176,7 @@ public class DataEncryptionStandard {
         return outputFile;
     }
 
-    public void decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
+    public String decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
 
@@ -235,12 +235,7 @@ public class DataEncryptionStandard {
                 os.write(outputBytes);
             }
         }
-
-        System.out.println("Input file: " + inputFile);
-        System.out.println("Output file: " + outputFile);
-        System.out.println("Transformation: " + transformation);
-        System.out.println("Key: " + baseSecretKey);
-        System.out.println("IV: " + base64Iv);
+        return outputFile;
     }
 
 }
