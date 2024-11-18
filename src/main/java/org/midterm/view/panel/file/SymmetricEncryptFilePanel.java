@@ -106,7 +106,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.DES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.DES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -225,7 +225,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
         decryptButton.addActionListener(e -> {
             try {
                 InformationData data = collectionData();
-                SymmetricFileController.decrypt(data);
+                SymmetricFileController.decrypt(data, resultFilePathField);
                 JOptionPane.showMessageDialog(this, "File decrypted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
