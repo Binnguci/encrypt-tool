@@ -5,6 +5,7 @@ import org.midterm.model.InformationData;
 import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
 import org.midterm.service.encryption.symmetric_encryption.normal.BlowFish;
 import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
+import org.midterm.service.encryption.symmetric_encryption.normal.TripleDES;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -27,14 +28,22 @@ public class SymmetricFileController {
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 key = dataEncryptionStandard.generateKey();
                 keyField.setText(key);
+                break;
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 key = advancedEncryptionStandard.generateKey(keySize);
                 keyField.setText(key);
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 BlowFish blowFish = BlowFish.create();
                 key = blowFish.generateKey(keySize);
                 keyField.setText(key);
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                key = tripleDES.generateKey(keySize);
+                keyField.setText(key);
+                break;
         }
     }
 
@@ -45,14 +54,22 @@ public class SymmetricFileController {
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 iv = dataEncryptionStandard.generateIv(ivSize);
                 ivField.setText(iv);
+                break;
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 iv = advancedEncryptionStandard.generateIv(ivSize);
                 ivField.setText(iv);
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 BlowFish blowFish = BlowFish.create();
                 iv = blowFish.generateIv();
                 ivField.setText(iv);
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                iv = tripleDES.generateIv(ivSize);
+                ivField.setText(iv);
+                break;
         }
     }
 
@@ -70,12 +87,19 @@ public class SymmetricFileController {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 result = dataEncryptionStandard.encryptFile(iv, key, filePath, mode, padding);
+                break;
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 result = advancedEncryptionStandard.encryptFile(iv, key, filePath, mode, padding);
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 BlowFish blowFish = BlowFish.create();
                 result = blowFish.encryptFile(iv, key, filePath, mode, padding);
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                result = tripleDES.encryptFile(iv, key, filePath, mode, padding);
+                break;
         }
         outputFile.setText(result);
     }
@@ -94,12 +118,19 @@ public class SymmetricFileController {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 result = dataEncryptionStandard.decryptFile(base64Iv, key, filePath, mode, padding);
+                break;
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard advancedEncryptionStandard = AdvancedEncryptionStandard.create();
                 result = advancedEncryptionStandard.decryptFile(base64Iv, key, filePath, mode, padding);
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 BlowFish blowFish = BlowFish.create();
                 result = blowFish.decryptFile(base64Iv, key, filePath, mode, padding);
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                result = tripleDES.decryptFile(base64Iv, key, filePath, mode, padding);
+                break;
         }
         outputFile.setText(result);
     }

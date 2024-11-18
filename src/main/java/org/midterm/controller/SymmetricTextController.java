@@ -10,6 +10,7 @@ import org.midterm.service.encryption.symmetric_encryption.classic.Vigenere;
 import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
 import org.midterm.service.encryption.symmetric_encryption.normal.BlowFish;
 import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
+import org.midterm.service.encryption.symmetric_encryption.normal.TripleDES;
 
 import javax.swing.*;
 
@@ -33,18 +34,27 @@ public class SymmetricTextController {
                 Vigenere vigenere = Vigenere.create();
                 key = vigenere.generateRandomKey(language, 10);
                 keyField.setText(key);
+                break;
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 key = dataEncryptionStandard.generateKey();
                 keyField.setText(key);
+                break;
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
                 key = AES.generateKey(keySize);
                 keyField.setText(key);
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 BlowFish blowFish = BlowFish.create();
                 key = blowFish.generateKey(keySize);
                 keyField.setText(key);
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                key = tripleDES.generateKey(keySize);
+                keyField.setText(key);
+                break;
         }
     }
 
@@ -55,14 +65,22 @@ public class SymmetricTextController {
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 iv = dataEncryptionStandard.generateIv(sizeKey);
                 ivField.setText(iv);
+                break;
             case AlgorithmsConstant.AES:
                 AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
                 iv = AES.generateIv(sizeKey);
                 ivField.setText(iv);
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 BlowFish blowFish = BlowFish.create();
                 iv = blowFish.generateIv();
                 ivField.setText(iv);
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                iv = tripleDES.generateIv(sizeKey);
+                ivField.setText(iv);
+                break;
             default:
                 break;
         }
@@ -78,7 +96,7 @@ public class SymmetricTextController {
         String language = informationData.getLanguage();
         String inputText = informationData.getInputText();
         String result = "";
-
+        System.out.println(informationData.toString());
         switch (algorithm) {
             case AlgorithmsConstant.SHIFT:
                 ShiftCipher shiftCipher = ShiftCipher.create();
@@ -103,7 +121,7 @@ public class SymmetricTextController {
             case AlgorithmsConstant.DES:
                 DataEncryptionStandard dataEncryptionStandard = DataEncryptionStandard.create();
                 try {
-                    result = dataEncryptionStandard.encryptText(key, inputText, mode, padding, iv);
+                    result = dataEncryptionStandard.encryptText(iv, key, inputText, mode, padding);
                 } catch (Exception e) {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
@@ -115,13 +133,23 @@ public class SymmetricTextController {
                 } catch (Exception e) {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
+                break;
             case AlgorithmsConstant.BLOWFISH:
                 try {
                     BlowFish blowFish = BlowFish.create();
-                    result = blowFish.encryptText(key, inputText, mode, padding, iv);
+                    result = blowFish.encryptText(iv, key, inputText, mode, padding);
                 } catch (Exception e) {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
+                break;
+            case AlgorithmsConstant.TRIPLEDES:
+                try {
+                    TripleDES tripleDES = TripleDES.create();
+                    result = tripleDES.encryptText(iv, key, inputText, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error encrypting text: " + e.getMessage());
+                }
+                break;
         }
         resultArea.setText(result);
     }
@@ -169,14 +197,21 @@ public class SymmetricTextController {
             case AlgorithmsConstant.AES:
                 try {
                     AdvancedEncryptionStandard AES = AdvancedEncryptionStandard.create();
-                    result = AES.decryptText(inputText, key, iv, mode, padding);
+                    result = AES.decryptText(iv, key, inputText, mode, padding);
                 } catch (Exception e) {
                     System.err.println("Error decrypting text: " + e.getMessage());
                 }
             case AlgorithmsConstant.BLOWFISH:
                 try {
                     BlowFish blowFish = BlowFish.create();
-                    result = blowFish.decryptText(inputText, key, iv, mode, padding);
+                    result = blowFish.decryptText(iv, key, inputText, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error decrypting text: " + e.getMessage());
+                }
+            case AlgorithmsConstant.TRIPLEDES:
+                TripleDES tripleDES = TripleDES.create();
+                try {
+                    result = tripleDES.decryptText(iv, key, inputText, mode, padding);
                 } catch (Exception e) {
                     System.err.println("Error decrypting text: " + e.getMessage());
                 }

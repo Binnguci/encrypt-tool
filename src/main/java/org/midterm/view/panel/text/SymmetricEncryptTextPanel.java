@@ -74,7 +74,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES, AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AFFINE, AlgorithmsConstant.SHIFT, AlgorithmsConstant.SUBSTITUTION, AlgorithmsConstant.VIGENERE, AlgorithmsConstant.DES, AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.TRIPLEDES});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -257,8 +257,7 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 keyButtonPanel.setVisible(false);
                 ivPanel.setVisible(false);
                 ivButtonPanel.setVisible(false);
-            }
-            else {
+            } else {
                 affinePanel.setVisible(false);
                 keyPanel.setVisible(true);
                 keyButtonPanel.setVisible(true);
@@ -346,7 +345,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
                 AlgorithmsConstant.DES,
                 AlgorithmsConstant.AES,
                 AlgorithmsConstant.AFFINE,
-                AlgorithmsConstant.BLOWFISH
+                AlgorithmsConstant.BLOWFISH,
+                AlgorithmsConstant.TRIPLEDES
         );
 
         // Mặc định: vô hiệu hóa tất cả các trường
@@ -382,7 +382,8 @@ public class SymmetricEncryptTextPanel extends JPanel {
                     copyKeyButton.setEnabled(true);
                 }
 
-                case AlgorithmsConstant.DES, AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH -> {
+                case AlgorithmsConstant.DES, AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH,
+                     AlgorithmsConstant.TRIPLEDES -> {
                     languageComboBox.setEnabled(false);
                     modeComboBox.setEnabled(true);
                     paddingComboBox.setEnabled(true);
@@ -462,9 +463,10 @@ public class SymmetricEncryptTextPanel extends JPanel {
 
     private static void updateKeySize(String algorithm, JComboBox<Integer> keySizeField) {
         switch (algorithm) {
-            case "AES" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128, 192, 256}));
-            case "DES" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{56}));
-            case "Blowfish" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{32, 64, 128, 192, 256}));
+            case AlgorithmsConstant.AES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128, 192, 256}));
+            case AlgorithmsConstant.DES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{56}));
+            case AlgorithmsConstant.BLOWFISH -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{32, 64, 128, 192, 256}));
+            case AlgorithmsConstant.TRIPLEDES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{112, 168}));
             case "RC2" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{40, 56, 64, 128, 192, 256}));
             case "IDEA" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128}));
             case "RC4" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128}));
