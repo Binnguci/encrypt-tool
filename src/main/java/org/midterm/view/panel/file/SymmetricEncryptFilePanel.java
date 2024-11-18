@@ -106,7 +106,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
         optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.DES, AlgorithmsConstant.TRIPLEDES});
+        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.DES, AlgorithmsConstant.TRIPLEDES, AlgorithmsConstant.RC4});
         optionsPanel.add(algorithmComboBox);
 
         optionsPanel.add(new JLabel("Mode:"));
@@ -239,6 +239,12 @@ public class SymmetricEncryptFilePanel extends JPanel {
                 keyField.setText(savedKey);
                 updateKeySize(selectedAlgorithm, keySizeField);
                 updateIvSize(getSelectedMode(), ivSizeField, generateIvButton, resetIvButton);
+            }
+            if (selectedAlgorithm.equalsIgnoreCase(AlgorithmsConstant.RC4)){
+                ivField.setEditable(false);
+                ivField.setText("");
+                generateIvButton.setEnabled(false);
+                resetIvButton.setEnabled(false);
             }
         });
 

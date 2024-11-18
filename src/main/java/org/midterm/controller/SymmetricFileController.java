@@ -2,10 +2,7 @@ package org.midterm.controller;
 
 import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.model.InformationData;
-import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
-import org.midterm.service.encryption.symmetric_encryption.normal.BlowFish;
-import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
-import org.midterm.service.encryption.symmetric_encryption.normal.TripleDES;
+import org.midterm.service.encryption.symmetric_encryption.normal.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -42,6 +39,11 @@ public class SymmetricFileController {
             case AlgorithmsConstant.TRIPLEDES:
                 TripleDES tripleDES = TripleDES.create();
                 key = tripleDES.generateKey(keySize);
+                keyField.setText(key);
+                break;
+            case AlgorithmsConstant.RC4:
+                RC4 rc4 = RC4.create();
+                key = rc4.generateKey(keySize);
                 keyField.setText(key);
                 break;
         }
@@ -100,6 +102,10 @@ public class SymmetricFileController {
                 TripleDES tripleDES = TripleDES.create();
                 result = tripleDES.encryptFile(iv, key, filePath, mode, padding);
                 break;
+            case AlgorithmsConstant.RC4:
+                RC4 rc4 = RC4.create();
+                result = rc4.encryptFile(key, filePath);
+                break;
         }
         outputFile.setText(result);
     }
@@ -130,6 +136,10 @@ public class SymmetricFileController {
             case AlgorithmsConstant.TRIPLEDES:
                 TripleDES tripleDES = TripleDES.create();
                 result = tripleDES.decryptFile(base64Iv, key, filePath, mode, padding);
+                break;
+            case AlgorithmsConstant.RC4:
+                RC4 rc4 = RC4.create();
+                result = rc4.decryptFile(key, filePath);
                 break;
         }
         outputFile.setText(result);

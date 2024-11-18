@@ -7,10 +7,7 @@ import org.midterm.service.encryption.symmetric_encryption.classic.AffineCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.ShiftCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.SubstitutionCipher;
 import org.midterm.service.encryption.symmetric_encryption.classic.Vigenere;
-import org.midterm.service.encryption.symmetric_encryption.normal.AdvancedEncryptionStandard;
-import org.midterm.service.encryption.symmetric_encryption.normal.BlowFish;
-import org.midterm.service.encryption.symmetric_encryption.normal.DataEncryptionStandard;
-import org.midterm.service.encryption.symmetric_encryption.normal.TripleDES;
+import org.midterm.service.encryption.symmetric_encryption.normal.*;
 
 import javax.swing.*;
 
@@ -53,6 +50,11 @@ public class SymmetricTextController {
             case AlgorithmsConstant.TRIPLEDES:
                 TripleDES tripleDES = TripleDES.create();
                 key = tripleDES.generateKey(keySize);
+                keyField.setText(key);
+                break;
+            case AlgorithmsConstant.RC4:
+                RC4 rc4 = RC4.create();
+                key = rc4.generateKey(keySize);
                 keyField.setText(key);
                 break;
         }
@@ -150,6 +152,14 @@ public class SymmetricTextController {
                     System.err.println("Error encrypting text: " + e.getMessage());
                 }
                 break;
+            case AlgorithmsConstant.RC4:
+                try {
+                    RC4 rc4 = RC4.create();
+                    result = rc4.encryptText(key, inputText);
+                } catch (Exception e) {
+                    System.err.println("Error encrypting text: " + e.getMessage());
+                }
+                break;
         }
         resultArea.setText(result);
     }
@@ -212,6 +222,13 @@ public class SymmetricTextController {
                 TripleDES tripleDES = TripleDES.create();
                 try {
                     result = tripleDES.decryptText(iv, key, inputText, mode, padding);
+                } catch (Exception e) {
+                    System.err.println("Error decrypting text: " + e.getMessage());
+                }
+            case AlgorithmsConstant.RC4:
+                RC4 rc4 = RC4.create();
+                try {
+                    result = rc4.decryptText(key, inputText);
                 } catch (Exception e) {
                     System.err.println("Error decrypting text: " + e.getMessage());
                 }
