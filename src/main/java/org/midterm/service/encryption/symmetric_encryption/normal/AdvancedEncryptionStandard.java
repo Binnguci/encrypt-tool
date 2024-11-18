@@ -1,4 +1,4 @@
-package org.midterm.service.encryption.symmetric_encryption.impl;
+package org.midterm.service.encryption.symmetric_encryption.normal;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
