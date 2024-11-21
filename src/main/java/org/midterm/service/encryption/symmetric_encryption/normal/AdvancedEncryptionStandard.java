@@ -8,9 +8,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
+import java.util.*;
 
-public class AdvancedEncryptionStandard {
+public class AdvancedEncryptionStandard extends Symmetric {
 
     public static AdvancedEncryptionStandard create() {
         return new AdvancedEncryptionStandard();
@@ -24,7 +24,7 @@ public class AdvancedEncryptionStandard {
 
 
     public String generateIv(int ivSize) {
-        byte[] iv = new byte[ivSize / 8];
+        byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
         return Base64.getEncoder().encodeToString(iv);
     }
@@ -232,5 +232,44 @@ public class AdvancedEncryptionStandard {
             }
         }
         return outputFile;
+    }
+
+    @Override
+    public void initTransformations() {
+        transformations = new ArrayList<>();
+
+        transformations.add("AES/CBC/PKCS5Padding");
+        transformations.add("AES/CBC/NoPadding");
+        transformations.add("AES/CBC/ISO10126Padding");
+        transformations.add("AES/CFB/PKCS5Padding");
+    }
+
+    public String[] getMode() {
+        Set<String> set = new TreeSet<>();
+
+        transformations.forEach(t -> {
+            set.add(t.split("/")[1]);
+        });
+
+        return set.toArray(new String[0]);
+    }
+
+    public String[] getPadding(String mode) {
+        Set<String> set = new TreeSet<>();
+
+        transformations.forEach(t -> {
+            String[] parts = t.split("/");
+            if (parts[1].equals(mode)) {
+                set.add(parts[2]);
+            }
+        });
+
+        return set.toArray(new String[0]);
+    }
+
+    public static void main(String[] args) {
+        AdvancedEncryptionStandard advancedEncryptionStandard = new AdvancedEncryptionStandard();
+        System.out.println(Arrays.toString(advancedEncryptionStandard.getMode()));
+        System.out.println(Arrays.toString(advancedEncryptionStandard.getPadding("CBC")));
     }
 }

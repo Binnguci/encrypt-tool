@@ -1,6 +1,7 @@
 package org.midterm.constant;
 
 public class AlgorithmsConstant {
+    public static final String NONE = "None";
     public static final String SHIFT = "Shift Cipher";
     public static final String SUBSTITUTION = "Substitution Cipher";
     public static final String VIGENERE = "Vigenere Cipher";

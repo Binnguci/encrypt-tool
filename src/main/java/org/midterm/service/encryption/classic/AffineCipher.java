@@ -1,11 +1,27 @@
-package org.midterm.service.encryption.symmetric_encryption.classic;
+package org.midterm.service.encryption.classic;
 
 import org.midterm.constant.StringConstant;
+import org.midterm.model.AffineKey;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class AffineCipher {
+
+    public String encrypt(String plainText, String language, Object key) {
+        if (!(key instanceof AffineKey affineKey)) {
+            throw new IllegalArgumentException("Key must be an AffineKey.");
+        }
+        return encryptAffine(plainText, affineKey.getA(), affineKey.getB(), language);
+    }
+
+    public String decrypt(String cipherText, String language, Object key) {
+        if (!(key instanceof AffineKey affineKey)) {
+            throw new IllegalArgumentException("Key must be an AffineKey.");
+        }
+        return decryptAffine(cipherText, affineKey.getA(), affineKey.getB(), language);
+    }
+
     private final Map<String, String> alphabets = new HashMap<>();
 
     public static AffineCipher create() {
@@ -23,15 +39,15 @@ public class AffineCipher {
                 return x;
             }
         }
-        throw new IllegalArgumentException("a và m không nguyên tố cùng nhau, không thể tính nghịch đảo.");
+        throw new IllegalArgumentException("a and m are not coprime and cannot be inversed.");
     }
 
-    public String encrypt(String plainText, int a, int b, String language) {
+    public String encryptAffine(String plainText, int a, int b, String language) {
         String alphabet = getAlphabetByLanguage(language);
         int m = alphabet.length();
 
         if (gcd(a, m) != 1) {
-            throw new IllegalArgumentException("a phải nguyên tố cùng nhau với m.");
+            throw new IllegalArgumentException("a and m must be coprime.");
         }
 
         StringBuilder cipherText = new StringBuilder();
@@ -47,12 +63,12 @@ public class AffineCipher {
         return cipherText.toString();
     }
 
-    public String decrypt(String cipherText, int a, int b, String language) {
+    public String decryptAffine(String cipherText, int a, int b, String language) {
         String alphabet = getAlphabetByLanguage(language);
         int m = alphabet.length();
 
         if (gcd(a, m) != 1) {
-            throw new IllegalArgumentException("a phải nguyên tố cùng nhau với m.");
+            throw new IllegalArgumentException("\n" + "a must be coprime with m.");
         }
 
         int aInverse = modularInverse(a, m);
@@ -77,30 +93,5 @@ public class AffineCipher {
         return b == 0 ? a : gcd(b, a % b);
     }
 
-    public static void main(String[] args) {
-        AffineCipher cipher = new AffineCipher();
-
-        String plainTextEnglish = "Hello, World!";
-        String plainTextVietnamese = "Xin chào, Thế giới!";
-
-        int a = 5; // Hệ số nhân
-        int b = 8; // Hệ số dịch
-
-        // Mã hóa và giải mã tiếng Anh
-        String encryptedEnglish = cipher.encrypt(plainTextEnglish, a, b, StringConstant.LANGUAGE_ENGLISH);
-        String decryptedEnglish = cipher.decrypt(encryptedEnglish, a, b, StringConstant.LANGUAGE_ENGLISH);
-
-        System.out.println("Original English: " + plainTextEnglish);
-        System.out.println("Encrypted English: " + encryptedEnglish);
-        System.out.println("Decrypted English: " + decryptedEnglish);
-
-        // Mã hóa và giải mã tiếng Việt
-        String encryptedVietnamese = cipher.encrypt(plainTextVietnamese, a, b, StringConstant.LANGUAGE_VIETNAMESE);
-        String decryptedVietnamese = cipher.decrypt(encryptedVietnamese, a, b, StringConstant.LANGUAGE_VIETNAMESE);
-
-        System.out.println("Original Vietnamese: " + plainTextVietnamese);
-        System.out.println("Encrypted Vietnamese: " + encryptedVietnamese);
-        System.out.println("Decrypted Vietnamese: " + decryptedVietnamese);
-    }
 }
 

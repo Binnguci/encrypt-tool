@@ -1,4 +1,4 @@
-package org.midterm.service.encryption.symmetric_encryption.classic;
+package org.midterm.service.encryption.classic;
 
 import org.midterm.constant.StringConstant;
 
@@ -6,7 +6,28 @@ import java.util.Random;
 
 public class Vigenere {
 
-    public static String encrypt(String plaintext, String key, String language) {
+    public static Vigenere create() {
+        return new Vigenere();
+    }
+
+    public String generateKey(String plaintext, String language) {
+        String alphabet = getAlphabetByLanguage(language);
+        StringBuilder key = new StringBuilder();
+        Random random = new Random();
+
+        // Tính toán kích thước key bằng 1/3 độ dài văn bản
+        int keyLength = Math.max(1, (2 * plaintext.length()) / 3);  // Đảm bảo keyLength tối thiểu là 1
+
+        for (int i = 0; i < keyLength; i++) {
+            int index = random.nextInt(alphabet.length());
+            key.append(alphabet.charAt(index));
+        }
+
+        return key.toString();
+    }
+
+
+    public String encrypt(String plaintext, String key, String language) {
         String alphabet = getAlphabetByLanguage(language);
         StringBuilder ciphertext = new StringBuilder();
         String extendedKey = extendKey(key, plaintext.length(), alphabet);
@@ -30,7 +51,7 @@ public class Vigenere {
         return ciphertext.toString();
     }
 
-    public static String decrypt(String ciphertext, String key, String language) {
+    public String decrypt(String ciphertext, String key, String language) {
         String alphabet = getAlphabetByLanguage(language);
         StringBuilder plaintext = new StringBuilder();
         String extendedKey = extendKey(key, ciphertext.length(), alphabet);
@@ -43,7 +64,6 @@ public class Vigenere {
             int keyIndex = alphabet.indexOf(keyChar);
 
             if (cipherIndex == -1 || keyIndex == -1) {
-                // Ký tự không nằm trong bảng chữ cái, giữ nguyên
                 plaintext.append(cipherChar);
             } else {
                 int decryptedIndex = (cipherIndex - keyIndex + alphabet.length()) % alphabet.length();
@@ -54,18 +74,6 @@ public class Vigenere {
         return plaintext.toString();
     }
 
-    public static String generateRandomKey(String language, int keyLength) {
-        String alphabet = getAlphabetByLanguage(language);
-        StringBuilder key = new StringBuilder();
-        Random random = new Random();
-
-        for (int i = 0; i < keyLength; i++) {
-            int index = random.nextInt(alphabet.length());
-            key.append(alphabet.charAt(index));
-        }
-
-        return key.toString();
-    }
 
     private static String getAlphabetByLanguage(String language) {
         switch (language.toUpperCase()) {
@@ -92,7 +100,5 @@ public class Vigenere {
         return extendedKey.toString();
     }
 
-    public static Vigenere create() {
-        return new Vigenere();
-    }
+
 }

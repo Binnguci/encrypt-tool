@@ -2,17 +2,16 @@ package org.midterm.view.page;
 
 import org.midterm.constant.OptionConstant;
 import org.midterm.view.panel.EncryptionTypeToolBar;
-import org.midterm.view.panel.file.HashFilePanel;
-import org.midterm.view.panel.text.HashTextPanel;
+import org.midterm.view.panel.text.ClassicEncryptTextPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class HashPanel extends JPanel {
+public class ClassicEncryptPanel extends JPanel {
     CardLayout cardLayout = new CardLayout();
     JPanel contentPanel = new JPanel(cardLayout);
 
-    public HashPanel() {
+    public ClassicEncryptPanel() {
         setLayout(new BorderLayout());
 
         EncryptionTypeToolBar toolBar = new EncryptionTypeToolBar();
@@ -24,14 +23,13 @@ public class HashPanel extends JPanel {
             }
         });
 
-        HashTextPanel hashTextPanel = new HashTextPanel();
-        HashFilePanel hashFilePanel = new HashFilePanel();
-        contentPanel.add(hashTextPanel, OptionConstant.TEXT_PANEL);
-        contentPanel.add(hashFilePanel, OptionConstant.FILE_PANEL);
+        ClassicEncryptTextPanel classicEncryptPanel = new ClassicEncryptTextPanel();
+
+        contentPanel.add(classicEncryptPanel, OptionConstant.TEXT_PANEL);
 
         add(toolBar, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
 
-        cardLayout.show(contentPanel, OptionConstant.TEXT_PANEL);
+        cardLayout.show(contentPanel, "TextPanel");
     }
 }

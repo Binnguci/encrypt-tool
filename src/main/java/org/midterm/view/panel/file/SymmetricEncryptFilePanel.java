@@ -3,7 +3,6 @@ package org.midterm.view.panel.file;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.midterm.constant.AlgorithmsConstant;
-import org.midterm.controller.SymmetricFileController;
 import org.midterm.model.InformationData;
 import org.midterm.service.KeyManager;
 import org.midterm.view.common.CustomColorButton;
@@ -194,81 +193,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
         paddedPanel.add(mainPanel, BorderLayout.NORTH);
 
         add(paddedPanel, BorderLayout.NORTH);
-        generateKeyButton.addActionListener(e -> {
-            String algorithm = (String) algorithmComboBox.getSelectedItem();
-            int keySize = (int) keySizeField.getSelectedItem();
-            try {
-                SymmetricFileController.generateKey((String) algorithmComboBox.getSelectedItem(), keySize, keyField);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
 
-        resetIvButton.addActionListener(e -> ivField.setText(""));
-
-        generateIvButton.addActionListener(e -> {
-            String algorithm = (String) algorithmComboBox.getSelectedItem();
-            Integer ivSize = (Integer) ivSizeField.getSelectedItem();
-            SymmetricFileController.generateIV(algorithm, ivSize, ivField);
-        });
-
-        encryptButton.addActionListener(e -> {
-            try {
-                InformationData data = collectionData();
-                SymmetricFileController.encrypt(data, resultFilePathField);
-                JOptionPane.showMessageDialog(this, "File encrypted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        decryptButton.addActionListener(e -> {
-            try {
-                InformationData data = collectionData();
-                SymmetricFileController.decrypt(data, resultFilePathField);
-                JOptionPane.showMessageDialog(this, "File decrypted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        algorithmComboBox.addActionListener(e -> {
-            String selectedAlgorithm = (String) algorithmComboBox.getSelectedItem();
-            if (selectedAlgorithm != null) {
-                String savedKey = KeyManager.loadKey(selectedAlgorithm);
-                keyField.setText(savedKey);
-                updateKeySize(selectedAlgorithm, keySizeField);
-                updateIvSize(getSelectedMode(), ivSizeField, generateIvButton, resetIvButton);
-            }
-            if (selectedAlgorithm.equalsIgnoreCase(AlgorithmsConstant.RC4)){
-                ivField.setEditable(false);
-                ivField.setText("");
-                generateIvButton.setEnabled(false);
-                resetIvButton.setEnabled(false);
-            }
-        });
-
-        saveKeyButton.addActionListener(e -> {
-            String selectedAlgorithm = (String) algorithmComboBox.getSelectedItem();
-            String key = keyField.getText();
-            if (selectedAlgorithm != null && key != null && !key.isEmpty()) {
-                KeyManager.saveKey(selectedAlgorithm, key);
-                JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
-            } else {
-                JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
-            }
-        });
-
-        modeComboBox.addActionListener(e -> {
-            String selectedMode = (String) modeComboBox.getSelectedItem();
-            if (selectedMode != null && selectedMode.equals("ECB")) {
-                ivField.setText("");
-                ivField.setEditable(false);
-            } else {
-                ivField.setEditable(true);
-            }
-            updateIvSize(selectedMode, ivSizeField, generateIvButton, resetIvButton);
-        });
     }
 
 
@@ -320,45 +245,4 @@ public class SymmetricEncryptFilePanel extends JPanel {
     }
 
 
-
-    private String getSelectedAlgorithm() {
-        return (String) algorithmComboBox.getSelectedItem();
-    }
-
-    private String getSelectedMode() {
-        return (String) modeComboBox.getSelectedItem();
-    }
-
-    private String getSelectedPadding() {
-        return (String) paddingComboBox.getSelectedItem();
-    }
-
-    private String getKey() {
-        return keyField.getText();
-    }
-
-    private String getIV() {
-        return ivField.getText();
-    }
-
-    private String getFilePathField() {
-        return filePathField.getText();
-    }
-
-    private String getResultFilePathField() {
-        return resultFilePathField.getText();
-    }
-
-
-    private InformationData collectionData() {
-        return InformationData.builder()
-                .algorithm(getSelectedAlgorithm())
-                .mode(getSelectedMode())
-                .padding(getSelectedPadding())
-                .key(getKey())
-                .iv(getIV())
-                .filePath(getFilePathField())
-                .resultFilePath(getResultFilePathField())
-                .build();
-    }
 }
