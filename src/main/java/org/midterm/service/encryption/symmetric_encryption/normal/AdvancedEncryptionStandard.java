@@ -23,7 +23,7 @@ public class AdvancedEncryptionStandard extends Symmetric {
     }
 
 
-    public String generateIv(int ivSize) {
+    public String generateIv() {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
         return Base64.getEncoder().encodeToString(iv);
@@ -42,20 +42,10 @@ public class AdvancedEncryptionStandard extends Symmetric {
     }
 
     public String encryptText(String base64Iv, String secretKeyBase64, String plainText, String mode, String padding) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-
-        if (plainText == null || plainText.isEmpty()) {
-            throw new IllegalArgumentException("Plain text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
-        String transformation = "AES";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "AES/" + mode + "/" + padding;
 
         secretKeyBase64 = secretKeyBase64.trim();
         if (base64Iv != null) {
@@ -63,13 +53,14 @@ public class AdvancedEncryptionStandard extends Symmetric {
         }
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
+
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {
-                throw new IllegalArgumentException("IV không được null hoặc rỗng với chế độ không phải ECB.");
+                throw new IllegalArgumentException("IV not found.");
             }
             IvParameterSpec iv = convertBase64ToIv(base64Iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
@@ -80,26 +71,16 @@ public class AdvancedEncryptionStandard extends Symmetric {
 
 
     public String decryptText(String base64Iv,String secretKeyBase64,String cipherTextBase64,   String mode, String padding) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-
-        if (cipherTextBase64 == null || cipherTextBase64.isEmpty()) {
-            throw new IllegalArgumentException("Cipher text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
 
-        String transformation = "AES";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "AES/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {

@@ -3,8 +3,6 @@ package org.midterm.view.panel.file;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.midterm.constant.AlgorithmsConstant;
-import org.midterm.model.InformationData;
-import org.midterm.service.KeyManager;
 import org.midterm.view.common.CustomColorButton;
 import org.midterm.view.common.FileChooser;
 
@@ -18,7 +16,7 @@ import java.net.URL;
 import java.util.List;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class SymmetricEncryptFilePanel extends JPanel {
+public class SymmetricFilePanel extends JPanel {
 
     JTextField filePathField;
     JTextField resultFilePathField;
@@ -31,7 +29,7 @@ public class SymmetricEncryptFilePanel extends JPanel {
     JButton generateKeyButton, copyKeyButton, saveKeyButton;
 
 
-    public SymmetricEncryptFilePanel() {
+    public SymmetricFilePanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(211, 211, 211)));
 
@@ -205,44 +203,4 @@ public class SymmetricEncryptFilePanel extends JPanel {
         paddingComboBox.setSelectedIndex(0);
         keyField.setText("");
     }
-
-    private static void updateKeySize(String algorithm, JComboBox<Integer> keySizeField) {
-        switch (algorithm) {
-            case AlgorithmsConstant.AES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128, 192, 256}));
-            case AlgorithmsConstant.DES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{56}));
-            case AlgorithmsConstant.BLOWFISH ->
-                    keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{32, 64, 128, 192, 256, 448}));
-            case AlgorithmsConstant.TRIPLEDES -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{112, 168}));
-            case "RC2" ->
-                    keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{40, 56, 64, 128, 192, 256, 512, 1024}));
-            case "IDEA" -> keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128}));
-            case "RC4" ->
-                    keySizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{40, 64, 128, 256, 512, 1024, 2048}));
-        }
-    }
-
-    private static void updateIvSize(String mode, JComboBox<Integer> ivSizeField, JButton generateIvButton, JButton copyIvButton) {
-        if (mode == null || mode.isEmpty() || mode.equalsIgnoreCase("None")) {
-            ivSizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{}));
-            ivSizeField.setEnabled(false);
-            generateIvButton.setEnabled(false);
-            copyIvButton.setEnabled(false);
-            return;
-        }
-
-        switch (mode) {
-            case "CBC", "CFB", "OFB", "CTR", "GCM" -> {
-                ivSizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{128}));
-                ivSizeField.setEnabled(true);
-                generateIvButton.setEnabled(true);
-                copyIvButton.setEnabled(true);
-            }
-            default -> {
-                ivSizeField.setModel(new DefaultComboBoxModel<>(new Integer[]{}));
-                ivSizeField.setEnabled(false);
-            }
-        }
-    }
-
-
 }

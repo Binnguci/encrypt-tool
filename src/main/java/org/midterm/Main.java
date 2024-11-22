@@ -59,7 +59,7 @@ public class Main extends JFrame {
 
     private void initializePanelMap() {
         panelMap.put(OptionConstant.CLASSIC_ENCRYPT, new ClassicEncryptPanel());
-//        panelMap.put(OptionConstant.SYMMETRIC_ENCRYPT, new SymmetricEncryptPanel());
+        panelMap.put(OptionConstant.SYMMETRIC_ENCRYPT, new SymmetricPanel());
 //        panelMap.put(OptionConstant.ASYMMETRIC_ENCRYPT, new AsymmetricEncryptPanel());
 //        panelMap.put(OptionConstant.HASH, new HashPanel());
 //        panelMap.put(OptionConstant.DIGITAL_SIGNATURE, new DigitalSignaturePanel());
@@ -74,48 +74,3 @@ public class Main extends JFrame {
     }
 
 }
-
-
-//    public void updateContent(String option) {
-//        mainContentPanel.removeAll();
-//        switch (option) {
-//            case OptionConstant.SYMMETRIC_ENCRYPT:
-//                mainContentPanel.add(new SymmetricEncryptPanel(), OptionConstant.SYMMETRIC_ENCRYPT);
-//                break;
-//            case OptionConstant.ASYMMETRIC_ENCRYPT:
-//                mainContentPanel.add(new AsymmetricEncryptPanel(), OptionConstant.ASYMMETRIC_ENCRYPT);
-//                break;
-//            case OptionConstant.HASH:
-//                mainContentPanel.add(new HashPanel(), OptionConstant.HASH);
-//                break;
-//            case OptionConstant.DIGITAL_SIGNATURE:
-//                mainContentPanel.add(new DigitalSignaturePanel(), OptionConstant.DIGITAL_SIGNATURE);
-//                break;
-//            case OptionConstant.ABOUT:
-//                mainContentPanel.add(new AboutPanel(), OptionConstant.ABOUT);
-//                break;
-//            default:
-//                mainContentPanel.add(new MainContentPanel(), OptionConstant.DEFAULT);
-//                break;
-//        }
-//
-//        CardLayout cardLayout = (CardLayout) mainContentPanel.getLayout();
-//        cardLayout.show(mainContentPanel, option);
-//        revalidate();
-//        repaint();
-//    }
-
-//    public static void main(String[] args) {
-//        try {
-//            UIManager.setLookAndFeel(new FlatMacLightLaf());
-//
-//            UIManager.put("Panel.background", Color.WHITE);
-//            UIManager.put("TextField.background", Color.WHITE);
-//            UIManager.put("Button.background", Color.WHITE);
-//            UIManager.put("ComboBox.background", Color.WHITE);
-//            UIManager.put("ToolBar.background", Color.WHITE);
-//        } catch (UnsupportedLookAndFeelException e) {
-//            System.err.println("Unsupported Look and Feel");
-//        }
-//        SwingUtilities.invokeLater(Main::new);
-//    }

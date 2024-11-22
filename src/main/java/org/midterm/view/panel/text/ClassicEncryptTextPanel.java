@@ -302,15 +302,7 @@ public class ClassicEncryptTextPanel extends JPanel {
         });
     }
 
-    private void hideAllParameterFields() {
-        shiftField.setEnabled(false);
-        keyField.setEnabled(false);
-        substitutionField.setEnabled(false);
-        hillKeyArea.setEnabled(false);
-        aComboBox.setEnabled(false);
-        bComboBox.setEnabled(false);
 
-    }
 
     private JPanel createLabeledPanel(String labelText, JComponent component) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -323,12 +315,21 @@ public class ClassicEncryptTextPanel extends JPanel {
         return new JComboBox<>(items);
     }
 
+    private void hideAllParameterFields() {
+        shiftField.setEnabled(false);
+        keyField.setEnabled(false);
+        substitutionField.setEnabled(false);
+        hillKeyArea.setEnabled(false);
+        aComboBox.setEnabled(false);
+        bComboBox.setEnabled(false);
+
+    }
+
     private class AlgorithmSelectionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             hideAllParameterFields();
             String selectedAlgorithm = (String) algorithmComboBox.getSelectedItem();
-
             switch (selectedAlgorithm) {
                 case AlgorithmsConstant.AFFINE:
                     aComboBox.setEnabled(true);
@@ -358,11 +359,8 @@ public class ClassicEncryptTextPanel extends JPanel {
 
     private List<List<Integer>> parseHillMatrix(String input) {
         List<List<Integer>> matrix = new ArrayList<>();
-
-        // Tách từng dòng
         String[] rows = input.split("\n");
         for (String row : rows) {
-            // Tách từng số trong một dòng
             String[] numbers = row.trim().split("\\s+");
             List<Integer> rowValues = new ArrayList<>();
             for (String number : numbers) {

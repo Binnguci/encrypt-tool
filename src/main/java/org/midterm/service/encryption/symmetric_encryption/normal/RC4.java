@@ -9,12 +9,9 @@ import java.util.Base64;
 
 
 public class RC4 {
-    public static String generateKey(int keySize) throws Exception {
-        if (keySize < 40 || keySize > 2048) {
-            throw new IllegalArgumentException("Key size phải nằm trong khoảng từ 40 đến 2048 bit.");
-        }
+    public static String generateKey() throws Exception {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("RC4");
-        keyGenerator.init(keySize);
+        keyGenerator.init(128);
         SecretKey secretKey = keyGenerator.generateKey();
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
@@ -28,9 +25,6 @@ public class RC4 {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (plainText == null || plainText.isEmpty()) {
-            throw new IllegalArgumentException("Plain text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
@@ -46,9 +40,6 @@ public class RC4 {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (cipherTextBase64 == null || cipherTextBase64.isEmpty()) {
-            throw new IllegalArgumentException("Cipher text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }

@@ -10,7 +10,7 @@ public class Hill {
     public String encrypt(String plainText, int[][] key) {
         plainText = plainText.toUpperCase().replaceAll("[^A-Z]", "");
         while (plainText.length() % keySize != 0) {
-            plainText += "X"; // Chuẩn hóa chiều dài
+            plainText += "X";
         }
 
         StringBuilder cipherText = new StringBuilder();

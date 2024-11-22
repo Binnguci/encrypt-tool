@@ -22,8 +22,8 @@ public class TripleDES {
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
-    public static String generateIv(int ivSize) {
-        byte[] iv = new byte[ivSize / 8];
+    public static String generateIv() {
+        byte[] iv = new byte[8];
         new SecureRandom().nextBytes(iv);
         return Base64.getEncoder().encodeToString(iv);
     }
@@ -42,24 +42,15 @@ public class TripleDES {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (plainText == null || plainText.isEmpty()) {
-            throw new IllegalArgumentException("Plain text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
-        String transformation = "DESede";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "DESede/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {
@@ -76,24 +67,14 @@ public class TripleDES {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (cipherText == null || cipherText.isEmpty()) {
-            throw new IllegalArgumentException("Cipher text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
-        String transformation = "DESede";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
-
+        String transformation = "DESede/" + mode + "/" + padding;
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {

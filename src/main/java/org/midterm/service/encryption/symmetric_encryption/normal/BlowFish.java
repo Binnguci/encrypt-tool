@@ -39,24 +39,15 @@ public class BlowFish {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (plainText == null || plainText.isEmpty()) {
-            throw new IllegalArgumentException("Plain text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
-        String transformation = "Blowfish";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {
@@ -73,25 +64,16 @@ public class BlowFish {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (cipherTextBase64 == null || cipherTextBase64.isEmpty()) {
-            throw new IllegalArgumentException("Cipher text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
 
-        String transformation = "Blowfish";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {
