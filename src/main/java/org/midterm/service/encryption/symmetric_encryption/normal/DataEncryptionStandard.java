@@ -98,29 +98,22 @@ public class DataEncryptionStandard {
     public String encryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
+
         File inputFileObj = new File(inputFile);
         System.out.println(inputFileObj);
-        String parentPath = inputFileObj.getParent(); // Lấy thư mục chứa file nguồn
-        String fileName = inputFileObj.getName(); // Lấy tên file nguồn
+        String parentPath = inputFileObj.getParent();
+        String fileName = inputFileObj.getName();
         String outputFile = null;
-        int dotIndex = fileName.lastIndexOf('.'); // Tìm dấu chấm cuối cùng (nếu có)
+        int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) { // Nếu file có phần mở rộng
             outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_encrypt" + fileName.substring(dotIndex);
         } else { // Nếu file không có phần mở rộng
             outputFile = parentPath + File.separator + fileName + "_encrypt";
         }
 
-        String transformation = "DES";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
-
+        String transformation = "DES/" + mode + "/"+ padding;
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
-
         if (base64Iv != null && !base64Iv.isEmpty()) {
             iv = convertBase64ToIv(base64Iv);
         }
@@ -163,36 +156,28 @@ public class DataEncryptionStandard {
             IOException, IllegalBlockSizeException, BadPaddingException {
 
         File inputFileObj = new File(inputFile);
-        String parentPath = inputFileObj.getParent(); // Thư mục chứa file nguồn
-        String fileName = inputFileObj.getName(); // Tên file nguồn
+        String parentPath = inputFileObj.getParent();
+        String fileName = inputFileObj.getName();
         String outputFile = null;
 
-        int dotIndex = fileName.lastIndexOf('.'); // Tìm dấu chấm cuối cùng (nếu có)
+        int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) {
             outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_decrypt" + fileName.substring(dotIndex);
         } else {
             outputFile = parentPath + File.separator + fileName + "_decrypt";
         }
 
-        String transformation = "DES";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "DES/" + mode + "/"+ padding;
 
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
 
-        // Tạo IV nếu có base64Iv
         if (base64Iv != null && !base64Iv.isEmpty()) {
             iv = convertBase64ToIv(base64Iv);
         }
 
         Cipher cipher = Cipher.getInstance(transformation);
 
-        // Khởi tạo Cipher
         if (iv != null && !mode.equalsIgnoreCase("ECB")) {
             cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         } else {

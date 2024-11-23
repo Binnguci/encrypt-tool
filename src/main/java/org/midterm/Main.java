@@ -60,8 +60,8 @@ public class Main extends JFrame {
     private void initializePanelMap() {
         panelMap.put(OptionConstant.CLASSIC_ENCRYPT, new ClassicEncryptPanel());
         panelMap.put(OptionConstant.SYMMETRIC_ENCRYPT, new SymmetricPanel());
+        panelMap.put(OptionConstant.HASH, new HashPanel());
 //        panelMap.put(OptionConstant.ASYMMETRIC_ENCRYPT, new AsymmetricEncryptPanel());
-//        panelMap.put(OptionConstant.HASH, new HashPanel());
 //        panelMap.put(OptionConstant.DIGITAL_SIGNATURE, new DigitalSignaturePanel());
         panelMap.put(OptionConstant.ABOUT, new AboutPanel());
         panelMap.put(OptionConstant.DEFAULT, new MainContentPanel());

@@ -103,13 +103,7 @@ public class BlowFish {
             outputFile = parentPath + File.separator + fileName + "_encrypt";
         }
 
-        String transformation = "Blowfish";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
@@ -167,13 +161,7 @@ public class BlowFish {
             outputFile = parentPath + File.separator + fileName + "_decrypt";
         }
 
-        String transformation = "Blowfish";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;

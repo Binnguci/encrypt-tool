@@ -3,7 +3,11 @@ package org.midterm.view.panel.file;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.midterm.constant.AlgorithmsConstant;
-import org.midterm.view.common.CustomColorButton;
+import org.midterm.controller.SymmetricFileController;
+import org.midterm.controller.SymmetricTextController;
+import org.midterm.factory.EncryptionConfigFactory;
+import org.midterm.model.SymmetricAlgorithms;
+import org.midterm.service.KeyManager;
 import org.midterm.view.common.FileChooser;
 
 import javax.swing.*;
@@ -15,32 +19,69 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SymmetricFilePanel extends JPanel {
-
-    JTextField filePathField;
-    JTextField resultFilePathField;
+    JTextField filePathField, resultFilePathField, keyField, ivField;
     JComboBox<String> algorithmComboBox, modeComboBox, paddingComboBox;
-    JComboBox<Integer> keySizeField;
-    JTextField keyField;
-    JTextField ivField;
-    JComboBox<Integer> ivSizeField;
-    JButton generateIvButton, resetIvButton;
-    JButton generateKeyButton, copyKeyButton, saveKeyButton;
+    JLabel ivSizeLabel;
+    JComboBox<Integer> keySizeComboBox, ivSizeCombox;
+    JButton generateIvButton, resetIvButton, generateKeyButton, copyKeyButton, saveKeyButton;
 
+    public static SymmetricFilePanel create() {
+        return new SymmetricFilePanel();
+    }
 
     public SymmetricFilePanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(211, 211, 211)));
 
+        JPanel mainPanel = createMainPanel();
+        JPanel paddedPanel = createPaddedPanel(mainPanel);
+
+        add(paddedPanel, BorderLayout.NORTH);
+    }
+
+    private JPanel createPaddedPanel(JPanel mainPanel) {
+        JPanel paddedPanel = new JPanel(new BorderLayout());
+        paddedPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        paddedPanel.add(mainPanel, BorderLayout.NORTH);
+        return paddedPanel;
+    }
+
+    private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
+        mainPanel.add(createDropPanel());
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(createFilePathPanel());
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(createAlgorithmSelectionPanel());
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(createEncryptionConfigPanel());
+        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(createActionButtonPanel());
+        mainPanel.add(createResultPathPanel());
+        mainPanel.add(Box.createVerticalStrut(20));
+        mainPanel.add(createResetButton());
+        updateEncryptionConfig();
+        return mainPanel;
+    }
+
+    private JPanel createDropPanel() {
         JPanel dropPanel = new JPanel(new BorderLayout());
         dropPanel.setPreferredSize(new Dimension(500, 150));
         dropPanel.setBackground(Color.WHITE);
         dropPanel.setBorder(BorderFactory.createTitledBorder("Drag and Drop File Here"));
 
+        JLabel dropLabel = createDropLabel();
+        dropPanel.add(dropLabel, BorderLayout.CENTER);
+
+        setupDropTarget(dropPanel);
+        return dropPanel;
+    }
+
+    private JLabel createDropLabel() {
         JLabel dropLabel = new JLabel("Drag & Drop your file here", SwingConstants.CENTER);
         URL iconURL = getClass().getResource("/img/icons8-file-64.png");
         if (iconURL != null) {
@@ -48,18 +89,18 @@ public class SymmetricFilePanel extends JPanel {
         } else {
             System.err.println("Warning: Icon file not found at /img/icons8-file-64.png");
         }
-
         dropLabel.setHorizontalTextPosition(SwingConstants.CENTER);
         dropLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+        return dropLabel;
+    }
 
-        dropPanel.add(dropLabel, BorderLayout.CENTER);
-
+    private void setupDropTarget(JPanel dropPanel) {
         new DropTarget(dropPanel, new DropTargetListener() {
             @Override
             public void drop(DropTargetDropEvent event) {
                 event.acceptDrop(DnDConstants.ACTION_COPY);
                 try {
-                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.getFirst() instanceof File file) {
+                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.get(0) instanceof File file) {
                         filePathField.setText(file.getAbsolutePath());
                     }
                 } catch (Exception e) {
@@ -79,121 +120,194 @@ public class SymmetricFilePanel extends JPanel {
             public void dropActionChanged(DropTargetDragEvent event) {
             }
         });
+    }
 
-
-        mainPanel.add(dropPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
-
+    private JPanel createFilePathPanel() {
         JPanel filePathPanel = new JPanel(new BorderLayout());
         filePathField = new JTextField();
         filePathField.setEditable(true);
         filePathField.setBorder(BorderFactory.createTitledBorder("File Path"));
-        filePathPanel.setBackground(Color.WHITE);
+
+        JButton browseBtn = createBrowseButton();
         filePathPanel.add(filePathField, BorderLayout.CENTER);
-
-        JButton browseBtn = new JButton("Browse");
-        FileChooser.addBrowseButtonListener(browseBtn, filePathField, mainPanel);
         filePathPanel.add(browseBtn, BorderLayout.EAST);
+        return filePathPanel;
+    }
 
+    private JButton createBrowseButton() {
+        JButton browseBtn = new JButton("Browse");
+        FileChooser.addBrowseButtonListener(browseBtn, filePathField, this);
+        return browseBtn;
+    }
 
-        mainPanel.add(filePathPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
+    private JPanel createAlgorithmSelectionPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBorder(BorderFactory.createTitledBorder("Select Algorithm"));
 
-        JPanel optionsPanel = new JPanel();
-        optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        String[] algorithms = {AlgorithmsConstant.AES, AlgorithmsConstant.DES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.TRIPLEDES, AlgorithmsConstant.RC4};
+        algorithmComboBox = new JComboBox<>(algorithms);
+        algorithmComboBox.addActionListener(e -> updateEncryptionConfig());
 
-        optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"None", AlgorithmsConstant.AES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.DES, AlgorithmsConstant.TRIPLEDES, AlgorithmsConstant.RC4});
-        optionsPanel.add(algorithmComboBox);
+        panel.add(new JLabel("Algorithm:"));
+        panel.add(algorithmComboBox);
+        return panel;
+    }
 
-        optionsPanel.add(new JLabel("Mode:"));
-        modeComboBox = new JComboBox<>(new String[]{"None", "ECB", "CBC", "CFB", "OFB", "CTR", "GCM"});
-        optionsPanel.add(modeComboBox);
+    private void updateEncryptionConfig() {
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        // Update mode options
+        List<String> modes = EncryptionConfigFactory.getModes(algorithm);
+        modeComboBox.setModel(new DefaultComboBoxModel<>(modes.toArray(new String[0])));
 
-        optionsPanel.add(new JLabel("Padding:"));
-        paddingComboBox = new JComboBox<>(new String[]{"None", "PKCS5Padding", "PKCS7Padding", "ISO10126Padding", "ZeroPadding", "NoPadding"});
-        optionsPanel.add(paddingComboBox);
+        paddingComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"NoPadding"}));
 
-        mainPanel.add(optionsPanel);
-        JPanel keyPanel = new JPanel(new BorderLayout());
-        keyField = new JTextField();
-        keyField.setEditable(true);
-        keyField.setBorder(BorderFactory.createTitledBorder("Key"));
-        keySizeField = new JComboBox<>(new Integer[]{128, 192, 256});
-        JPanel keySizePanel = new JPanel(new BorderLayout());
+        modeComboBox.addActionListener(e -> {
+            String selectedMode = (String) modeComboBox.getSelectedItem();
+            List<String> paddings = EncryptionConfigFactory.getPaddings(algorithm, selectedMode);
+            paddingComboBox.setModel(new DefaultComboBoxModel<>(paddings.toArray(new String[0])));
+        });
+
+        // Update key sizes
+        List<Integer> keySizes = EncryptionConfigFactory.getKeySizes(algorithm);
+        keySizeComboBox.setModel(new DefaultComboBoxModel<>(keySizes.toArray(new Integer[0])));
+
+        // Update IV size
+        int ivSize = EncryptionConfigFactory.getIvSize(algorithm);
+        ivSizeLabel.setText("IV Size: " + ivSize);
+
+        String savedKey = KeyManager.loadKey(algorithm);
+        keyField.setText(savedKey);
+        ivField.setText("");
+    }
+
+    private JPanel createEncryptionConfigPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder("Encryption Configuration"));
+
+        // Mode selection
+        JPanel modePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        modePanel.add(new JLabel("Mode:"));
+        modeComboBox = new JComboBox<>();
+        modePanel.add(modeComboBox);
+
+        // Padding selection
+        JPanel paddingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        paddingPanel.add(new JLabel("Padding:"));
+        paddingComboBox = new JComboBox<>();
+        paddingPanel.add(paddingComboBox);
+
+        // Key size
+        JPanel keySizePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         keySizePanel.add(new JLabel("Key Size:"));
-        keySizePanel.add(keySizeField, BorderLayout.EAST);
-        keyPanel.add(keySizePanel, BorderLayout.EAST);
-        keyPanel.add(keyField, BorderLayout.CENTER);
-        mainPanel.add(keyPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
+        keySizeComboBox = new JComboBox<>();
+        keySizePanel.add(keySizeComboBox);
+        keyField = new JTextField();
 
-        JPanel keyButtonPanel = new JPanel(new BorderLayout());
-        keyButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        generateKeyButton = new JButton("Generate Key");
-        copyKeyButton = new JButton("Copy");
-        saveKeyButton = new JButton("Save");
-        CustomColorButton.setButtonPressColor(saveKeyButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(generateKeyButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(copyKeyButton, "#F26680", Color.WHITE);
-        keyButtonPanel.add(generateKeyButton);
-        keyButtonPanel.add(copyKeyButton);
-        keyButtonPanel.add(saveKeyButton);
-        mainPanel.add(keyButtonPanel, BorderLayout.CENTER);
-
-        JPanel ivPanel = new JPanel(new BorderLayout());
+        JPanel ivSizePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        ivSizeLabel = new JLabel("IV Size:");
+        ivSizePanel.add(ivSizeLabel);
         ivField = new JTextField();
-        ivField.setEditable(true);
-        ivField.setBorder(BorderFactory.createTitledBorder("Initialization Vector"));
-        ivSizeField = new JComboBox<>(new Integer[]{128, 192, 256});
-        JPanel ivSizePanel = new JPanel(new BorderLayout());
-        ivSizePanel.add(new JLabel("IV Size:"));
-        ivSizePanel.add(ivSizeField, BorderLayout.EAST);
-        ivPanel.add(ivSizePanel, BorderLayout.EAST);
-        ivPanel.add(ivField, BorderLayout.CENTER);
-        mainPanel.add(ivPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
 
-        JPanel ivButtonPanel = new JPanel(new BorderLayout());
-        ivButtonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        generateIvButton = new JButton("Generate IV");
-        resetIvButton = new JButton("Reset IV");
-        CustomColorButton.setButtonPressColor(generateIvButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(resetIvButton, "#F26680", Color.WHITE);
-        ivButtonPanel.add(generateIvButton);
-        ivButtonPanel.add(resetIvButton);
-        mainPanel.add(ivButtonPanel, BorderLayout.CENTER);
+        panel.add(modePanel);
+        panel.add(paddingPanel);
+        panel.add(keySizePanel);
+        panel.add(createKeyPanel());
+        panel.add(ivSizePanel);
+        panel.add(createIVPanel(ivField));
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        return panel;
+    }
+
+    private JPanel createIVPanel(JTextField ivField) {
+        JPanel ivPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        ivPanel.add(new JLabel("IV:"));
+        ivField.setPreferredSize(new Dimension(300, 25));
+        ivPanel.add(ivField);
+        generateIvButton = new JButton("Generate");
+        generateIvButton.addActionListener(e -> {
+            try {
+                performGenerateIv();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        JButton resetButton = new JButton("Reset");
+        resetButton.addActionListener(e -> ivField.setText(""));
+//        JButton saveButton = new JButton("Save");
+        ivPanel.add(generateIvButton);
+        ivPanel.add(resetButton);
+//        ivPanel.add(saveButton);
+        return ivPanel;
+    }
+
+    private JPanel createKeyPanel() {
+        JPanel keyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        keyPanel.add(new JLabel("Key:"));
+        keyField.setPreferredSize(new Dimension(300, 25));
+        keyPanel.add(keyField);
+        JButton generateButton = new JButton("Generate");
+        generateButton.addActionListener(e -> {
+            try {
+                performGenerateKey();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        JButton resetButton = new JButton("Reset");
+        resetButton.addActionListener(e -> keyField.setText(""));
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> performSave(keyField));
+        keyPanel.add(generateButton);
+        keyPanel.add(resetButton);
+        keyPanel.add(saveButton);
+        return keyPanel;
+    }
+
+    private JPanel createActionButtonPanel() {
         JButton encryptButton = new JButton("Encrypt");
+        encryptButton.addActionListener(e -> {
+            try {
+                performEncryption();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         JButton decryptButton = new JButton("Decrypt");
-        CustomColorButton.setButtonPressColor(encryptButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(decryptButton, "#F26680", Color.WHITE);
-        buttonPanel.add(encryptButton);
-        buttonPanel.add(decryptButton);
-        mainPanel.add(buttonPanel);
+        decryptButton.addActionListener(e -> {
+            try {
+                performDecryption();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        return createButtonPanel(new JButton[]{encryptButton, decryptButton});
+    }
 
+    private JPanel createButtonPanel(JButton[] buttons) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        for (JButton button : buttons) {
+            panel.add(button);
+        }
+        return panel;
+    }
+
+    private JPanel createResultPathPanel() {
+        JPanel resultPathPanel = new JPanel(new BorderLayout());
         resultFilePathField = new JTextField();
         resultFilePathField.setEditable(false);
         resultFilePathField.setBackground(Color.WHITE);
         resultFilePathField.setBorder(BorderFactory.createTitledBorder("Result File Path"));
-        mainPanel.add(resultFilePathField);
-        mainPanel.add(Box.createVerticalStrut(20));
-
-        JButton resetButton = new JButton("Reset");
-        resetButton.addActionListener(e -> resetFields());
-        resetButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(resetButton);
-        mainPanel.add(Box.createVerticalStrut(10));
-
-        JPanel paddedPanel = new JPanel(new BorderLayout());
-        paddedPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        paddedPanel.add(mainPanel, BorderLayout.NORTH);
-
-        add(paddedPanel, BorderLayout.NORTH);
-
+        resultPathPanel.add(resultFilePathField, BorderLayout.CENTER);
+        return resultPathPanel;
     }
 
+    private JButton createResetButton() {
+        JButton resetButton = new JButton("Reset All Fields");
+        resetButton.addActionListener(e -> resetFields());
+        resetButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return resetButton;
+    }
 
     private void resetFields() {
         filePathField.setText("");
@@ -202,5 +316,54 @@ public class SymmetricFilePanel extends JPanel {
         modeComboBox.setSelectedIndex(0);
         paddingComboBox.setSelectedIndex(0);
         keyField.setText("");
+        ivField.setText("");
+    }
+
+    private void performEncryption() throws Exception {
+        SymmetricAlgorithms symmetricAlgorithms = collection();
+        String encryptedText = SymmetricFileController.encrypt(symmetricAlgorithms);
+        resultFilePathField.setText(encryptedText);
+    }
+
+    private void performDecryption() throws Exception {
+        SymmetricAlgorithms symmetricAlgorithms = collection();
+        String decryptedText = SymmetricFileController.decrypt(symmetricAlgorithms);
+        resultFilePathField.setText(decryptedText);
+    }
+
+    private void performGenerateIv() throws Exception {
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        String iv = SymmetricTextController.generateIV(algorithm);
+        ivField.setText(iv);
+    }
+
+    private void performSave(JTextField field) {
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        String key = field.getText();
+        if (algorithm != null && key != null && !key.isEmpty()) {
+            KeyManager.saveKey(algorithm, key);
+            JOptionPane.showMessageDialog(null, "Key saved successfully!");
+        } else {
+            JOptionPane.showMessageDialog(null, "Key cannot be empty!");
+        }
+
+    }
+
+    private void performGenerateKey() throws Exception {
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        String keySize = keySizeComboBox.getSelectedItem().toString();
+        String key = SymmetricTextController.generateKey(algorithm, keySize);
+        keyField.setText(key);
+    }
+
+    private SymmetricAlgorithms collection() {
+        return SymmetricAlgorithms.builder()
+                .name((String) algorithmComboBox.getSelectedItem())
+                .key(keyField.getText())
+                .iv(ivField.getText())
+                .filePath(filePathField.getText())
+                .mode((String) modeComboBox.getSelectedItem())
+                .padding((String) paddingComboBox.getSelectedItem())
+                .build();
     }
 }

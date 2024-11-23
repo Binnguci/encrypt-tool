@@ -2,17 +2,17 @@ package org.midterm.view.page;
 
 import org.midterm.constant.OptionConstant;
 import org.midterm.view.panel.EncryptionTypeToolBar;
-import org.midterm.view.panel.file.SymmetricFilePanel;
-import org.midterm.view.panel.text.SymmetricTextPanel;
+import org.midterm.view.panel.file.HashFilePanel;
+import org.midterm.view.panel.text.HashTextPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class SymmetricPanel extends JPanel {
+public class HashPanel extends JPanel {
     CardLayout cardLayout = new CardLayout();
     JPanel contentPanel = new JPanel(cardLayout);
 
-    public SymmetricPanel() {
+    public HashPanel() {
         setLayout(new BorderLayout());
 
         EncryptionTypeToolBar toolBar = new EncryptionTypeToolBar();
@@ -23,12 +23,10 @@ public class SymmetricPanel extends JPanel {
                 cardLayout.show(contentPanel, OptionConstant.FILE_PANEL);
             }
         });
-
-        SymmetricTextPanel symmetricTextPanel = SymmetricTextPanel.create();
-        SymmetricFilePanel symmetricFilePanel = SymmetricFilePanel.create();
-
-        contentPanel.add(symmetricTextPanel, OptionConstant.TEXT_PANEL);
-        contentPanel.add(symmetricFilePanel, OptionConstant.FILE_PANEL);
+        HashTextPanel hashTextPanel = HashTextPanel.create();
+        HashFilePanel hashFilePanel = HashFilePanel.create();
+        contentPanel.add(hashTextPanel, OptionConstant.TEXT_PANEL);
+        contentPanel.add(hashFilePanel, OptionConstant.FILE_PANEL);
 
         add(toolBar, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);

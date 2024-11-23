@@ -57,9 +57,16 @@ public class RC4 {
             IOException, IllegalBlockSizeException, BadPaddingException {
 
         File inputFileObj = new File(inputFile);
+        System.out.println(inputFileObj);
         String parentPath = inputFileObj.getParent();
         String fileName = inputFileObj.getName();
-        String outputFile = parentPath + File.separator + fileName + "_encrypt";
+        String outputFile = null;
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex != -1) {
+            outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_encrypt" + fileName.substring(dotIndex);
+        } else {
+            outputFile = parentPath + File.separator + fileName + "_encrypt";
+        }
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance("RC4");
@@ -67,7 +74,6 @@ public class RC4 {
 
         try (InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
              OutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile))) {
-
             byte[] buffer = new byte[10240];
             int bytesRead;
             while ((bytesRead = is.read(buffer)) != -1) {
@@ -76,7 +82,6 @@ public class RC4 {
                     os.write(output);
                 }
             }
-
             byte[] outputBytes = cipher.doFinal();
             if (outputBytes != null) {
                 os.write(outputBytes);
@@ -92,7 +97,14 @@ public class RC4 {
         File inputFileObj = new File(inputFile);
         String parentPath = inputFileObj.getParent();
         String fileName = inputFileObj.getName();
-        String outputFile = parentPath + File.separator + fileName + "_decrypt";
+        String outputFile = null;
+
+        int dotIndex = fileName.lastIndexOf('.');
+        if (dotIndex != -1) {
+            outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_decrypt" + fileName.substring(dotIndex);
+        } else {
+            outputFile = parentPath + File.separator + fileName + "_decrypt";
+        }
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance("RC4");

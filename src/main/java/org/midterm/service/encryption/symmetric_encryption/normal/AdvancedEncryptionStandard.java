@@ -8,9 +8,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Base64;
 
-public class AdvancedEncryptionStandard extends Symmetric {
+public class AdvancedEncryptionStandard {
 
     public static AdvancedEncryptionStandard create() {
         return new AdvancedEncryptionStandard();
@@ -70,7 +70,7 @@ public class AdvancedEncryptionStandard extends Symmetric {
     }
 
 
-    public String decryptText(String base64Iv,String secretKeyBase64,String cipherTextBase64,   String mode, String padding) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public String decryptText(String base64Iv, String secretKeyBase64, String cipherTextBase64, String mode, String padding) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
@@ -109,14 +109,7 @@ public class AdvancedEncryptionStandard extends Symmetric {
             outputFile = parentPath + File.separator + fileName + "_encrypt";
         }
 
-        String transformation = "AES";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
-
+        String transformation = "AES/" + mode + "/" + padding;
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
 
@@ -126,7 +119,6 @@ public class AdvancedEncryptionStandard extends Symmetric {
 
         Cipher cipher = Cipher.getInstance(transformation);
 
-        // Kiểm tra mode, nếu là ECB thì không sử dụng IV
         if (iv != null && !mode.equalsIgnoreCase("ECB")) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
         } else {
@@ -170,13 +162,7 @@ public class AdvancedEncryptionStandard extends Symmetric {
             outputFile = parentPath + File.separator + fileName + "_decrypt";
         }
 
-        String transformation = "AES";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "AES/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
@@ -213,44 +199,5 @@ public class AdvancedEncryptionStandard extends Symmetric {
             }
         }
         return outputFile;
-    }
-
-    @Override
-    public void initTransformations() {
-        transformations = new ArrayList<>();
-
-        transformations.add("AES/CBC/PKCS5Padding");
-        transformations.add("AES/CBC/NoPadding");
-        transformations.add("AES/CBC/ISO10126Padding");
-        transformations.add("AES/CFB/PKCS5Padding");
-    }
-
-    public String[] getMode() {
-        Set<String> set = new TreeSet<>();
-
-        transformations.forEach(t -> {
-            set.add(t.split("/")[1]);
-        });
-
-        return set.toArray(new String[0]);
-    }
-
-    public String[] getPadding(String mode) {
-        Set<String> set = new TreeSet<>();
-
-        transformations.forEach(t -> {
-            String[] parts = t.split("/");
-            if (parts[1].equals(mode)) {
-                set.add(parts[2]);
-            }
-        });
-
-        return set.toArray(new String[0]);
-    }
-
-    public static void main(String[] args) {
-        AdvancedEncryptionStandard advancedEncryptionStandard = new AdvancedEncryptionStandard();
-        System.out.println(Arrays.toString(advancedEncryptionStandard.getMode()));
-        System.out.println(Arrays.toString(advancedEncryptionStandard.getPadding("CBC")));
     }
 }
