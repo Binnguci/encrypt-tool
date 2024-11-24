@@ -23,6 +23,10 @@ public class AlgorithmsConstant {
     // asymmetric
     public static final String RSA = "RSA";
     public static final String DSA = "DSA";
+    public static final String ECDSA = "EC/ECDSA";
+    public static final String ELGAMAL = "ElGamal";
+    public static final String EC = "EC";
+    public static final String DH = "DH";
 
 
 }

@@ -1,8 +1,10 @@
 package org.midterm.view.panel.text;
 
 import org.midterm.constant.AlgorithmsConstant;
+import org.midterm.controller.AsymmetricTextController;
 import org.midterm.factory.EncryptionConfigFactory;
 import org.midterm.model.AsymmetricAlgorithms;
+import org.midterm.model.PairKey;
 import org.midterm.service.KeyManager;
 
 import javax.swing.*;
@@ -51,13 +53,15 @@ public class AsymmetricTextPanel extends JPanel {
 
         add(paddedPanel, BorderLayout.NORTH);
         updateEncryptionConfig();
+        loadKey();
     }
 
     private JPanel createAlgorithmSelectionPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBorder(BorderFactory.createTitledBorder("Select Algorithm"));
 
-        String[] algorithms = {AlgorithmsConstant.RSA, AlgorithmsConstant.DSA,};
+        String[] algorithms = {
+                AlgorithmsConstant.RSA};
         algorithmComboBox = new JComboBox<>(algorithms);
         algorithmComboBox.addActionListener(e -> updateEncryptionConfig());
 
@@ -95,8 +99,21 @@ public class AsymmetricTextPanel extends JPanel {
             List<Integer> keySizes = EncryptionConfigFactory.getKeySizesByAsymmetricAlgorithm(algorithm);
             keySizeComboBox.setModel(new DefaultComboBoxModel<>(keySizes.toArray(new Integer[0])));
             // Cập nhật key đã lưu (nếu có)
-            String savedKey = KeyManager.loadKey(algorithm);
-            publicKeyField.setText(savedKey);
+
+        }
+    }
+
+    private void loadKey(){
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        Integer keySize = (Integer) keySizeComboBox.getSelectedItem();
+        if (keySize != null) {
+            PairKey key = KeyManager.loadKeys(algorithm, keySize);
+            publicKeyField.setText(key.getPublicKey());
+            privateKeyField.setText(key.getPrivateKey());
+        } else {
+            System.err.println("Key size is null. No key pair loaded.");
+            publicKeyField.setText("");
+            privateKeyField.setText("");
         }
     }
 
@@ -132,7 +149,8 @@ public class AsymmetricTextPanel extends JPanel {
         panel.add(createPublicKeyPanel());
         panel.add(createPrivateKeyPanel());
         panel.add(createButtonKeyPanel());
-;        return panel;
+        ;
+        return panel;
     }
 
     private JPanel createPublicKeyPanel() {
@@ -143,7 +161,7 @@ public class AsymmetricTextPanel extends JPanel {
         return keyPanel;
     }
 
-    private JPanel createPrivateKeyPanel(){
+    private JPanel createPrivateKeyPanel() {
         JPanel privateKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         privateKeyPanel.add(new JLabel("Private key:"));
         privateKeyField.setPreferredSize(new Dimension(300, 25));
@@ -151,18 +169,33 @@ public class AsymmetricTextPanel extends JPanel {
         return privateKeyPanel;
     }
 
-    private JPanel createButtonKeyPanel(){
+    private JPanel createButtonKeyPanel() {
         JPanel keyButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton generateButton = new JButton("Generate");
+        generateButton.addActionListener(e -> {
+            try {
+                performGenKey();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         JButton resetButton = new JButton("Reset");
-        resetButton.addActionListener(e -> performReset(publicKeyField));
+        resetButton.addActionListener(e -> performReset(publicKeyField, privateKeyField));
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> performSave(privateKeyField));
+        saveButton.addActionListener(e -> performSave(publicKeyField, privateKeyField));
 
         keyButtonPanel.add(generateButton);
         keyButtonPanel.add(resetButton);
         keyButtonPanel.add(saveButton);
         return keyButtonPanel;
+    }
+
+    private void performGenKey() throws Exception {
+        int keySize = (Integer) keySizeComboBox.getSelectedItem();
+        String algorithms = (String) algorithmComboBox.getSelectedItem();
+        PairKey pairKey = AsymmetricTextController.generatePairKey(keySize, algorithms);
+        publicKeyField.setText(pairKey.getPublicKey());
+        privateKeyField.setText(pairKey.getPrivateKey());
     }
 
 
@@ -202,7 +235,21 @@ public class AsymmetricTextPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         JButton encryptButton = new JButton("Encrypt");
+        encryptButton.addActionListener(e -> {
+            try {
+                performEncrypt();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         JButton decryptButton = new JButton("Decrypt");
+        decryptButton.addActionListener(e -> {
+            try {
+                performDecrypt();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
 
         buttonPanel.add(encryptButton);
         buttonPanel.add(decryptButton);
@@ -214,20 +261,32 @@ public class AsymmetricTextPanel extends JPanel {
         return AsymmetricAlgorithms.builder().algorithm((String) algorithmComboBox.getSelectedItem()).inputText(textArea.getText()).mode((String) modeComboBox.getSelectedItem()).padding((String) paddingComboBox.getSelectedItem()).publicKey(publicKeyField.getText()).privateKey(privateKeyField.getText()).build();
     }
 
-    private void performReset(JTextField field) {
-        field.setText("");
+    private void performReset(JTextField publicKeyField, JTextField privateKeyField) {
+        publicKeyField.setText("");
+        privateKeyField.setText("");
     }
 
-    private void performSave(JTextField field) {
-        String algorithm = (String) algorithmComboBox.getSelectedItem();
-        String key = field.getText();
-        if (algorithm != null && key != null && !key.isEmpty()) {
-            KeyManager.saveKey(algorithm, key);
-            JOptionPane.showMessageDialog(null, "Key saved successfully!");
-        } else {
-            JOptionPane.showMessageDialog(null, "Key cannot be empty!");
-        }
+    private void performEncrypt() throws Exception {
+        AsymmetricAlgorithms asymmetricAlgorithms = collection();
+        String result = AsymmetricTextController.encypt(asymmetricAlgorithms);
+        resultArea.setText(result);
+    }
 
+    private void performDecrypt() throws Exception {
+        AsymmetricAlgorithms asymmetricAlgorithms = collection();
+        String result = AsymmetricTextController.decrypt(asymmetricAlgorithms);
+        resultArea.setText(result);
+    }
+
+    private void performSave(JTextField publicKey, JTextField privateKey) {
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        Integer keySize = (Integer) keySizeComboBox.getSelectedItem();
+        if (algorithm == null || keySize == null || publicKey.getText().isEmpty() || privateKey.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Failed");
+        } else {
+            KeyManager.saveKeys(algorithm, keySize, publicKey.getText(), privateKey.getText());
+            JOptionPane.showMessageDialog(null, "Key save successfulll");
+        }
     }
 
     private void addPlaceholder(JTextArea textArea, String placeholder) {

@@ -1,4 +1,4 @@
-package org.midterm.service.encryption.symmetric_encryption.normal;
+package org.midterm.service.encryption.symmetric;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;

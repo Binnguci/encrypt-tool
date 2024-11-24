@@ -2,7 +2,7 @@ package org.midterm.controller;
 
 import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.model.SymmetricAlgorithms;
-import org.midterm.service.encryption.symmetric_encryption.normal.*;
+import org.midterm.service.encryption.symmetric.*;
 
 public class SymmetricTextController {
     public static String generateKey(String algorithm, String keySize) throws Exception {

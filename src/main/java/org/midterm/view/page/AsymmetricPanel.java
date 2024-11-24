@@ -2,6 +2,7 @@ package org.midterm.view.page;
 
 import org.midterm.constant.OptionConstant;
 import org.midterm.view.panel.EncryptionTypeToolBar;
+import org.midterm.view.panel.file.AsymmetricFilePanel;
 import org.midterm.view.panel.text.AsymmetricTextPanel;
 
 import javax.swing.*;
@@ -24,8 +25,10 @@ public class AsymmetricPanel extends JPanel {
         });
 
         AsymmetricTextPanel asymmetricTextPanel = AsymmetricTextPanel.create();
+//        AsymmetricFilePanel asymmetricFilePanel = AsymmetricFilePanel.create();
 
         contentPanel.add(asymmetricTextPanel, OptionConstant.TEXT_PANEL);
+//        contentPanel.add(asymmetricFilePanel, OptionConstant.FILE_PANEL);
 
         add(toolBar, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);

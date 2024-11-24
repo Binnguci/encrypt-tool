@@ -65,9 +65,11 @@ public class EncryptionConfigFactory {
 
     private static final Map<String, Map<String, List<String>>> PADDING_BY_ASYMMETRIC_ALGORITHM_AND_MODE = Map.of(
             AlgorithmsConstant.RSA, Map.of(
-                    "ECB", Arrays.asList("PKCS1Padding", "OAEPWithSHA-256AndMGF1Padding", "NoPadding", "OAEPWithSHA-1AndMGF1Padding",
-                            "OAEPWithSHA-224AndMGF1Padding", "OAEPWithSHA-256AndMGF1Padding", "OAEPWithSHA-384AndMGF1Padding",
+                    "ECB", Arrays.asList("PKCS1Padding", "NoPadding", "OAEPWithMD5AndMGF1Padding", "OAEPWithSHA-256AndMGF1Padding", "OAEPWithSHA-384AndMGF1Padding",
                             "OAEPWithSHA-512AndMGF1Padding")
+            ),
+            AlgorithmsConstant.DSA, Map.of(
+                    "", List.of()
             )
     );
 
@@ -81,7 +83,8 @@ public class EncryptionConfigFactory {
     );
 
     private static final Map<String, List<Integer>> KEY_SIZES_BY_ASYMMETRIC_ALGORITHM = Map.of(
-            AlgorithmsConstant.RSA, Arrays.asList(2048, 3072, 4096)
+            AlgorithmsConstant.RSA, Arrays.asList(2048, 3072, 4096),
+            AlgorithmsConstant.DSA, Arrays.asList(1024, 2048, 3072, 4096)
     );
 
     // Kích thước IV dựa trên thuật toán

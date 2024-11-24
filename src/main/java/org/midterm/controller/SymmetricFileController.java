@@ -2,7 +2,7 @@ package org.midterm.controller;
 
 import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.model.SymmetricAlgorithms;
-import org.midterm.service.encryption.symmetric_encryption.normal.*;
+import org.midterm.service.encryption.symmetric.*;
 
 public class SymmetricFileController {
     public static String encrypt(SymmetricAlgorithms symmetricAlgorithms) throws Exception {
