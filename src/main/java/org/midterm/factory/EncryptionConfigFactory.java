@@ -2,6 +2,7 @@ package org.midterm.factory;
 
 import org.midterm.constant.AlgorithmsConstant;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -17,19 +18,10 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.RC4, List.of("None")
     );
 
-    // Danh sách các padding dựa trên mode
-//    private static final Map<String, List<String>> PADDING_BY_MODE = Map.of(
-//            "CBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-//            "ECB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-//            "GCM", List.of("NoPadding"),
-//            "KWP", List.of("NoPadding"),
-//            "OFB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-//            "CFB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-//            "PCBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-//            "CTR", List.of("NoPadding"),
-//            "CTS", List.of("NoPadding"),
-//            "None", Arrays.asList("PKCS1Padding", "OAEPWithSHA-256AndMGF1Padding")
-//    );
+    private static final Map<String, List<String>> MODES_BY_ASYMMETRIC_ALGORITHM = Map.of(
+            AlgorithmsConstant.RSA, List.of("ECB")
+    );
+
     private static final Map<String, Map<String, List<String>>> PADDING_BY_ALGORITHM_AND_MODE = Map.of(
             AlgorithmsConstant.AES, Map.of(
                     "CBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
@@ -71,6 +63,13 @@ public class EncryptionConfigFactory {
             )
     );
 
+    private static final Map<String, Map<String, List<String>>> PADDING_BY_ASYMMETRIC_ALGORITHM_AND_MODE = Map.of(
+            AlgorithmsConstant.RSA, Map.of(
+                    "ECB", Arrays.asList("PKCS1Padding", "OAEPWithSHA-256AndMGF1Padding", "NoPadding", "OAEPWithSHA-1AndMGF1Padding",
+                            "OAEPWithSHA-224AndMGF1Padding", "OAEPWithSHA-256AndMGF1Padding", "OAEPWithSHA-384AndMGF1Padding",
+                            "OAEPWithSHA-512AndMGF1Padding")
+            )
+    );
 
     // Danh sách kích thước key dựa trên thuật toán
     private static final Map<String, List<Integer>> KEY_SIZES_BY_ALGORITHM = Map.of(
@@ -79,6 +78,10 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.BLOWFISH, Arrays.asList(32, 64, 128, 192, 256),
             AlgorithmsConstant.TRIPLEDES, Arrays.asList(112, 168),
             AlgorithmsConstant.RC4, Arrays.asList(128)
+    );
+
+    private static final Map<String, List<Integer>> KEY_SIZES_BY_ASYMMETRIC_ALGORITHM = Map.of(
+            AlgorithmsConstant.RSA, Arrays.asList(2048, 3072, 4096)
     );
 
     // Kích thước IV dựa trên thuật toán
@@ -101,6 +104,10 @@ public class EncryptionConfigFactory {
         return MODES_BY_ALGORITHM.getOrDefault(algorithm, List.of());
     }
 
+    public static List<String> getModesByAsymmetricAlgorithm(String algorithm) {
+        return MODES_BY_ASYMMETRIC_ALGORITHM.getOrDefault(algorithm, List.of());
+    }
+
     /**
      * Lấy danh sách padding của một mode.
      *
@@ -115,6 +122,14 @@ public class EncryptionConfigFactory {
         return List.of();
     }
 
+    public static List<String> getPaddingsByAsymmetricAlgorithmAndMode(String algorithm, String mode) {
+        Map<String, List<String>> paddingsByMode = PADDING_BY_ASYMMETRIC_ALGORITHM_AND_MODE.get(algorithm);
+        if (paddingsByMode != null) {
+            return paddingsByMode.getOrDefault(mode, List.of());
+        }
+        return List.of();
+    }
+
     /**
      * Lấy danh sách kích thước key của một thuật toán.
      *
@@ -123,6 +138,10 @@ public class EncryptionConfigFactory {
      */
     public static List<Integer> getKeySizes(String algorithm) {
         return KEY_SIZES_BY_ALGORITHM.getOrDefault(algorithm, List.of());
+    }
+
+    public static List<Integer> getKeySizesByAsymmetricAlgorithm(String algorithm) {
+        return KEY_SIZES_BY_ASYMMETRIC_ALGORITHM.getOrDefault(algorithm, List.of());
     }
 
     /**

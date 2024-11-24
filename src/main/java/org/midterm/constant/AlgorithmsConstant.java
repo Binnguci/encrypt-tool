@@ -20,6 +20,9 @@ public class AlgorithmsConstant {
     public static final String SHA3 = "SHA-3";
     public static final String SHA256 = "SHA-256";
     public static final String SHA512 = "SHA-512";
+    // asymmetric
+    public static final String RSA = "RSA";
+    public static final String DSA = "DSA";
 
 
 }
