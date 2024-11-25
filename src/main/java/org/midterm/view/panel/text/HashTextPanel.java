@@ -92,6 +92,18 @@ public class HashTextPanel extends JPanel {
                 AlgorithmsConstant.SHA3,
                 AlgorithmsConstant.SHA256,
                 AlgorithmsConstant.SHA512,
+                AlgorithmsConstant.SHA384,
+                AlgorithmsConstant.SHA224,
+                AlgorithmsConstant.SHA3_224,
+                AlgorithmsConstant.SHA3_256,
+                AlgorithmsConstant.SHA3_384,
+                AlgorithmsConstant.SHA3_512,
+                AlgorithmsConstant.SHAKE126,
+                AlgorithmsConstant.SHAKE256,
+                AlgorithmsConstant.MD2,
+                AlgorithmsConstant.HMACSHA1,
+                AlgorithmsConstant.HMACSHA3_224,
+                AlgorithmsConstant.HmacSH3_256
         });
 
         JPanel algorithmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));

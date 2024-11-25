@@ -19,12 +19,12 @@ public class AsymmetricTextPanel extends JPanel {
     private JTextArea resultArea;
     private JComboBox<String> modeComboBox;
     private JComboBox<String> paddingComboBox;
-    private JLabel keySizeLabel;
+//    private JLabel keySizeLabel;
     private JComboBox<Integer> keySizeComboBox;
-    private JLabel ivSizeLabel;
-    private JComboBox<Integer> ivSizeComboBox;
-    private JTextField ivField;
-    private JButton generateButton;
+//    private JLabel ivSizeLabel;
+//    private JComboBox<Integer> ivSizeComboBox;
+//    private JTextField ivField;
+//    private JButton generateButton;
 
 
     public static AsymmetricTextPanel create() {
@@ -56,8 +56,13 @@ public class AsymmetricTextPanel extends JPanel {
         loadKey();
     }
 
+    private JPanel createFlowLeftPanel() {
+        return new JPanel(new FlowLayout(FlowLayout.LEFT));
+    }
+
+
     private JPanel createAlgorithmSelectionPanel() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel panel = createFlowLeftPanel();
         panel.setBorder(BorderFactory.createTitledBorder("Select Algorithm"));
 
         String[] algorithms = {
@@ -124,7 +129,7 @@ public class AsymmetricTextPanel extends JPanel {
         panel.setBorder(BorderFactory.createTitledBorder("Encryption Configuration"));
 
         // Mode selection
-        JPanel modePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel modePanel = createFlowLeftPanel();
         modePanel.add(new JLabel("Mode:"));
         modeComboBox = new JComboBox<>();
         modePanel.add(modeComboBox);
@@ -149,7 +154,6 @@ public class AsymmetricTextPanel extends JPanel {
         panel.add(createPublicKeyPanel());
         panel.add(createPrivateKeyPanel());
         panel.add(createButtonKeyPanel());
-        ;
         return panel;
     }
 
@@ -193,10 +197,14 @@ public class AsymmetricTextPanel extends JPanel {
     private void performGenKey() throws Exception {
         int keySize = (Integer) keySizeComboBox.getSelectedItem();
         String algorithms = (String) algorithmComboBox.getSelectedItem();
+        if (algorithms == null || algorithms.trim().isEmpty()) {
+            throw new IllegalArgumentException("Please select a valid algorithm!");
+        }
         PairKey pairKey = AsymmetricTextController.generatePairKey(keySize, algorithms);
         publicKeyField.setText(pairKey.getPublicKey());
         privateKeyField.setText(pairKey.getPrivateKey());
     }
+
 
 
     private JPanel createTextInputPanel() {

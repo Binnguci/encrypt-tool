@@ -18,15 +18,29 @@ public class AlgorithmsConstant {
     public static final String MD5 = "MD5";
     public static final String SHA1 = "SHA-1";
     public static final String SHA3 = "SHA-3";
+    public static final String SHA384 = "SHA-384";
+    public static final String SHA224 = "SHA-224";
+    public static final String SHA3_224 = "SHA3-224";
+    public static final String SHA3_256 = "SHA3-256";
+    public static final String SHA3_384 = "SHA3-384";
+    public static final String SHA3_512 = "SHA3-512";
+    public static final String SHAKE126 = "SHAKE128";
+    public static final String SHAKE256 = "SHAKE256";
     public static final String SHA256 = "SHA-256";
     public static final String SHA512 = "SHA-512";
+    public static final String MD2 = "MD2";
+    public static final String HMACSHA1 = "HmacSHA1";
+    public static final String HMACSHA3_224 = "HmacSHA3-224";
+    public static final String HmacSH3_256 = "HmacSHA3-256";
+
+
     // asymmetric
     public static final String RSA = "RSA";
-    public static final String DSA = "DSA";
-    public static final String ECDSA = "EC/ECDSA";
-    public static final String ELGAMAL = "ElGamal";
-    public static final String EC = "EC";
-    public static final String DH = "DH";
 
-
+    // digital signature
+    public static final String SHA1WITHDSA = "SHA1withDSA";
+    public static final String SHA256WITHDSA = "SHA256withDSA";
+    public static final String SHA1WITHRSA = "SHA1withRSA";
+    public static final String SHA256WITHRSA = "SHA256with";
+    public static final String SHA512WITHRSA = "SHA512withRSA";
 }

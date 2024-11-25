@@ -2,16 +2,14 @@ package org.midterm.factory;
 
 import org.midterm.constant.AlgorithmsConstant;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class EncryptionConfigFactory {
 
-    // Danh sách các mode dựa trên thuật toán
     private static final Map<String, List<String>> MODES_BY_ALGORITHM = Map.of(
-            AlgorithmsConstant.AES, Arrays.asList("ECB", "CBC", "CFB", "OFB", "CTR", "GCM", "PCBC", "CTS"),
+            AlgorithmsConstant.AES, Arrays.asList("ECB", "CBC", "CFB", "OFB", "CTR", "GCM", "KWP", "KW"),
             AlgorithmsConstant.DES, Arrays.asList("CBC", "ECB", "CFB", "OFB", "PCBC", "CTR", "CTS"),
             AlgorithmsConstant.BLOWFISH, Arrays.asList("CBC", "ECB", "CFB", "OFB", "PCBC", "CTR", "CTS"),
             AlgorithmsConstant.TRIPLEDES, Arrays.asList("CBC", "ECB", "CFB", "OFB", "PCBC"),
@@ -67,27 +65,29 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.RSA, Map.of(
                     "ECB", Arrays.asList("PKCS1Padding", "NoPadding", "OAEPWithMD5AndMGF1Padding", "OAEPWithSHA-256AndMGF1Padding", "OAEPWithSHA-384AndMGF1Padding",
                             "OAEPWithSHA-512AndMGF1Padding")
-            ),
-            AlgorithmsConstant.DSA, Map.of(
-                    "", List.of()
             )
     );
 
-    // Danh sách kích thước key dựa trên thuật toán
     private static final Map<String, List<Integer>> KEY_SIZES_BY_ALGORITHM = Map.of(
             AlgorithmsConstant.AES, Arrays.asList(128, 192, 256),
-            AlgorithmsConstant.DES, Arrays.asList(56),
+            AlgorithmsConstant.DES, List.of(56),
             AlgorithmsConstant.BLOWFISH, Arrays.asList(32, 64, 128, 192, 256),
             AlgorithmsConstant.TRIPLEDES, Arrays.asList(112, 168),
-            AlgorithmsConstant.RC4, Arrays.asList(128)
+            AlgorithmsConstant.RC4, List.of(128)
     );
 
     private static final Map<String, List<Integer>> KEY_SIZES_BY_ASYMMETRIC_ALGORITHM = Map.of(
-            AlgorithmsConstant.RSA, Arrays.asList(2048, 3072, 4096),
-            AlgorithmsConstant.DSA, Arrays.asList(1024, 2048, 3072, 4096)
+            AlgorithmsConstant.RSA, Arrays.asList(2048, 3072, 4096)
     );
 
-    // Kích thước IV dựa trên thuật toán
+    private static final Map<String, List<Integer>> KEY_SIZES_BY_DIGITAL_SIGNATURE_ALGORITHM = Map.of(
+            AlgorithmsConstant.SHA1WITHDSA, List.of(1024),
+            AlgorithmsConstant.SHA256WITHDSA, Arrays.asList(1024, 2048, 3072, 4096),
+            AlgorithmsConstant.SHA1WITHRSA, Arrays.asList(1024, 2048, 3072, 4096),
+            AlgorithmsConstant.SHA256WITHRSA, Arrays.asList(1024, 2048, 3072, 4096),
+            AlgorithmsConstant.SHA512WITHRSA, Arrays.asList(1024, 2048, 3072, 4096)
+    );
+
     private static final Map<String, Integer> IV_SIZE_MAP = Map.of(
             AlgorithmsConstant.AES, 16,
             AlgorithmsConstant.DES, 8,
@@ -96,13 +96,6 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.RC4, 0
     );
 
-
-    /**
-     * Lấy danh sách mode của một thuật toán.
-     *
-     * @param algorithm Tên thuật toán
-     * @return Danh sách mode tương ứng
-     */
     public static List<String> getModes(String algorithm) {
         return MODES_BY_ALGORITHM.getOrDefault(algorithm, List.of());
     }
@@ -111,12 +104,6 @@ public class EncryptionConfigFactory {
         return MODES_BY_ASYMMETRIC_ALGORITHM.getOrDefault(algorithm, List.of());
     }
 
-    /**
-     * Lấy danh sách padding của một mode.
-     *
-     * @param mode Tên mode
-     * @return Danh sách padding tương ứng
-     */
     public static List<String> getPaddings(String algorithm, String mode) {
         Map<String, List<String>> paddingsByMode = PADDING_BY_ALGORITHM_AND_MODE.get(algorithm);
         if (paddingsByMode != null) {
@@ -133,12 +120,6 @@ public class EncryptionConfigFactory {
         return List.of();
     }
 
-    /**
-     * Lấy danh sách kích thước key của một thuật toán.
-     *
-     * @param algorithm Tên thuật toán
-     * @return Danh sách kích thước key tương ứng
-     */
     public static List<Integer> getKeySizes(String algorithm) {
         return KEY_SIZES_BY_ALGORITHM.getOrDefault(algorithm, List.of());
     }
@@ -147,12 +128,10 @@ public class EncryptionConfigFactory {
         return KEY_SIZES_BY_ASYMMETRIC_ALGORITHM.getOrDefault(algorithm, List.of());
     }
 
-    /**
-     * Lấy kích thước IV của một thuật toán.
-     *
-     * @param algorithm Tên thuật toán
-     * @return Kích thước IV tương ứng
-     */
+    public static List<Integer> getKeyByDigitalSignatureAlgorithm(String algorithm) {
+        return KEY_SIZES_BY_DIGITAL_SIGNATURE_ALGORITHM.getOrDefault(algorithm, List.of());
+    }
+
     public static int getIvSize(String algorithm) {
         return IV_SIZE_MAP.getOrDefault(algorithm, 0);
     }
