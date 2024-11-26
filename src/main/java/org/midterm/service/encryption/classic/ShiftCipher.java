@@ -1,4 +1,4 @@
-package org.midterm.service.encryption.symmetric_encryption.classic;
+package org.midterm.service.encryption.classic;
 
 import org.midterm.constant.StringConstant;
 
@@ -7,6 +7,39 @@ public class ShiftCipher {
     public static ShiftCipher create() {
         return new ShiftCipher();
     }
+
+    public String encrypt(String plainText, String language, Object key) {
+        // Kiểm tra xem key có phải là một đối tượng hợp lệ (int shift)
+        if (key instanceof Integer) {
+            int shift = (int) key;
+            // Kiểm tra loại ngôn ngữ của văn bản để áp dụng mã hóa đúng
+            if (language.equalsIgnoreCase(StringConstant.LANGUAGE_ENGLISH)) {
+                return encryptEnglish(plainText, shift);
+            } else if (language.equalsIgnoreCase(StringConstant.LANGUAGE_VIETNAMESE)) {
+                return encryptVietnamese(plainText, shift);
+            } else {
+                return StringConstant.INPUT_INVALID;
+            }
+        }
+        return null;
+    }
+
+    public String decrypt(String cipherText, String language, Object key) {
+        // Kiểm tra xem key có phải là một đối tượng hợp lệ (int shift)
+        if (key instanceof Integer) {
+            int shift = (int) key;
+            // Kiểm tra loại ngôn ngữ của văn bản để áp dụng giải mã đúng
+            if (language.equalsIgnoreCase(StringConstant.LANGUAGE_ENGLISH)) {
+                return decryptEnglish(cipherText, shift);
+            } else if (language.equalsIgnoreCase(StringConstant.LANGUAGE_VIETNAMESE)) {
+                return decryptVietnamese(cipherText, shift);
+            } else {
+                return cipherText;  // Trả về cipherText nếu không phải tiếng Anh hay tiếng Việt
+            }
+        }
+        return null;
+    }
+
 
     public String encryptEnglish(String plainText, int shift) {
         StringBuilder cipherText = new StringBuilder();

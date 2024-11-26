@@ -23,9 +23,8 @@ public class HashPanel extends JPanel {
                 cardLayout.show(contentPanel, OptionConstant.FILE_PANEL);
             }
         });
-
-        HashTextPanel hashTextPanel = new HashTextPanel();
-        HashFilePanel hashFilePanel = new HashFilePanel();
+        HashTextPanel hashTextPanel = HashTextPanel.create();
+        HashFilePanel hashFilePanel = HashFilePanel.create();
         contentPanel.add(hashTextPanel, OptionConstant.TEXT_PANEL);
         contentPanel.add(hashFilePanel, OptionConstant.FILE_PANEL);
 

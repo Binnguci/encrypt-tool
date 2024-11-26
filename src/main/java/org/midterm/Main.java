@@ -1,22 +1,25 @@
 package org.midterm;
 
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.midterm.constant.OptionConstant;
-import org.midterm.view.panel.SideMenu;
+import org.midterm.view.UIManagerSetup;
 import org.midterm.view.page.*;
+import org.midterm.view.panel.SideMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class Main extends JFrame {
     JPanel mainContentPanel;
+    Map<String, JPanel> panelMap = new HashMap<>();
 
     public Main() {
         setTitle("Cryptography Tool");
-        setSize(1000, 700);
+        setSize(1000, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -30,34 +33,22 @@ public class Main extends JFrame {
 
         mainContentPanel = new JPanel();
         mainContentPanel.setLayout(new CardLayout());
+
+        for (Map.Entry<String, JPanel> entry : panelMap.entrySet()) {
+            mainContentPanel.add(entry.getValue(), entry.getKey());
+        }
+
         add(mainContentPanel, BorderLayout.CENTER);
+        initializePanelMap();
         mainContentPanel.add(new MainContentPanel(), OptionConstant.DEFAULT);
         setVisible(true);
     }
 
 
+
     public void updateContent(String option) {
-        mainContentPanel.removeAll();
-        switch (option) {
-            case "Symmetric Encrypt":
-                mainContentPanel.add(new SymmetricEncryptPanel(), OptionConstant.SYMMETRIC_ENCRYPT);
-                break;
-            case "Asymmetric Encrypt":
-                mainContentPanel.add(new AsymmetricEncryptPanel(), OptionConstant.ASYMMETRIC_ENCRYPT);
-                break;
-            case "Hash":
-                mainContentPanel.add(new HashPanel(), OptionConstant.HASH);
-                break;
-            case "Digital Signature":
-                mainContentPanel.add(new DigitalSignaturePanel(), OptionConstant.DIGITAL_SIGNATURE);
-                break;
-            case "About":
-                mainContentPanel.add(new AboutPanel(), OptionConstant.ABOUT);
-                break;
-            default:
-                mainContentPanel.add(new MainContentPanel(), OptionConstant.DEFAULT);
-                break;
-        }
+        JPanel panel = panelMap.getOrDefault(option, panelMap.get(OptionConstant.DEFAULT));
+        mainContentPanel.add(panel, option);
 
         CardLayout cardLayout = (CardLayout) mainContentPanel.getLayout();
         cardLayout.show(mainContentPanel, option);
@@ -65,18 +56,21 @@ public class Main extends JFrame {
         repaint();
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new FlatMacLightLaf());
 
-            UIManager.put("Panel.background", Color.WHITE);
-            UIManager.put("TextField.background", Color.WHITE);
-            UIManager.put("Button.background", Color.WHITE);
-            UIManager.put("ComboBox.background", Color.WHITE);
-            UIManager.put("ToolBar.background", Color.WHITE);
-        } catch (UnsupportedLookAndFeelException e) {
-            System.err.println("Unsupported Look and Feel");
-        }
+    private void initializePanelMap() {
+        panelMap.put(OptionConstant.CLASSIC_ENCRYPT, new ClassicEncryptPanel());
+        panelMap.put(OptionConstant.SYMMETRIC_ENCRYPT, new SymmetricPanel());
+        panelMap.put(OptionConstant.HASH, new HashPanel());
+        panelMap.put(OptionConstant.ASYMMETRIC_ENCRYPT, new AsymmetricPanel());
+        panelMap.put(OptionConstant.DIGITAL_SIGNATURE, new DigitalSignaturePanel());
+        panelMap.put(OptionConstant.ABOUT, new AboutPanel());
+        panelMap.put(OptionConstant.DEFAULT, new MainContentPanel());
+    }
+
+
+    public static void main(String[] args) {
+        UIManagerSetup.applyFlatLafTheme();
         SwingUtilities.invokeLater(Main::new);
     }
+
 }

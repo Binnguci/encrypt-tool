@@ -3,6 +3,7 @@ package org.midterm.view.panel;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.midterm.Main;
+import org.midterm.constant.OptionConstant;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,13 +20,15 @@ public class SideMenu extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         Dimension buttonSize = new Dimension(180, 40);
+        JButton btnClassicEncrypt = createButton(OptionConstant.CLASSIC_ENCRYPT, buttonSize);
+        JButton btnSymmetricEncrypt = createButton(OptionConstant.SYMMETRIC_ENCRYPT, buttonSize);
+        JButton btnAsymmetricEncrypt = createButton(OptionConstant.ASYMMETRIC_ENCRYPT, buttonSize);
+        JButton btnHash = createButton(OptionConstant.HASH, buttonSize);
+        JButton btnDigitalSignature = createButton(OptionConstant.DIGITAL_SIGNATURE, buttonSize);
+        JButton btnAbout = createButton(OptionConstant.ABOUT, buttonSize);
 
-        JButton btnSymmetricEncrypt = createButton("Symmetric Encrypt", buttonSize);
-        JButton btnAsymmetricEncrypt = createButton("Asymmetric Encrypt", buttonSize);
-        JButton btnHash = createButton("Hash", buttonSize);
-        JButton btnDigitalSignature = createButton("Digital Signature", buttonSize);
-        JButton btnAbout = createButton("About", buttonSize);
-
+        add(Box.createRigidArea(new Dimension(0, 0)));
+        add(btnClassicEncrypt);
         add(Box.createRigidArea(new Dimension(0, 0)));
         add(btnSymmetricEncrypt);
         add(Box.createRigidArea(new Dimension(0, 0)));

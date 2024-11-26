@@ -1,4 +1,4 @@
-package org.midterm.service.encryption.symmetric_encryption.normal;
+package org.midterm.service.encryption.symmetric;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -10,27 +10,24 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-public class TripleDES {
-    public static TripleDES create() {
-        return new TripleDES();
-    }
-
+public class BlowFish {
     public static String generateKey(int keySize) throws Exception {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("DESede");
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
         keyGenerator.init(keySize);
         SecretKey secretKey = keyGenerator.generateKey();
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
-    public static String generateIv(int ivSize) {
-        byte[] iv = new byte[ivSize / 8];
+    public static String generateIv() {
+        byte[] iv = new byte[8];
         new SecureRandom().nextBytes(iv);
         return Base64.getEncoder().encodeToString(iv);
     }
 
+
     private static SecretKey convertBase64ToKey(String base64Key) {
         byte[] decodedKey = Base64.getDecoder().decode(base64Key);
-        return new SecretKeySpec(decodedKey, "DESede");
+        return new SecretKeySpec(decodedKey, "Blowfish");
     }
 
     private static IvParameterSpec convertBase64ToIv(String base64Iv) {
@@ -42,24 +39,15 @@ public class TripleDES {
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (plainText == null || plainText.isEmpty()) {
-            throw new IllegalArgumentException("Plain text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
-        String transformation = "DESede";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {
@@ -72,28 +60,20 @@ public class TripleDES {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    public String decryptText(String base64Iv, String secretKeyBase64, String cipherText, String mode, String padding)
+    public String decryptText(String base64Iv, String secretKeyBase64,String cipherTextBase64,  String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
 
-        if (cipherText == null || cipherText.isEmpty()) {
-            throw new IllegalArgumentException("Cipher text không được rỗng hoặc null.");
-        }
         if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
             throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
         }
-        String transformation = "DESede";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
 
-        if ("ECB".equalsIgnoreCase(mode) || "None".equalsIgnoreCase(mode)) {
+        if ("ECB".equalsIgnoreCase(mode)) {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
         } else {
             if (base64Iv == null || base64Iv.isEmpty()) {
@@ -102,10 +82,11 @@ public class TripleDES {
             IvParameterSpec iv = convertBase64ToIv(base64Iv);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         }
-        byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
-        return new String(plainText);
-    }
 
+        byte[] cipherTextBytes = Base64.getDecoder().decode(cipherTextBase64);
+        byte[] plainTextBytes = cipher.doFinal(cipherTextBytes);
+        return new String(plainTextBytes);
+    }
 
     public String encryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
@@ -122,13 +103,7 @@ public class TripleDES {
             outputFile = parentPath + File.separator + fileName + "_encrypt";
         }
 
-        String transformation = "DESede";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
@@ -186,13 +161,7 @@ public class TripleDES {
             outputFile = parentPath + File.separator + fileName + "_decrypt";
         }
 
-        String transformation = "Desede";
-        if (mode != null && !mode.isEmpty() && !mode.equalsIgnoreCase("None")) {
-            transformation += "/" + mode;
-            if (padding != null && !padding.isEmpty()) {
-                transformation += "/" + padding;
-            }
-        }
+        String transformation = "Blowfish/" + mode + "/" + padding;
 
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
         IvParameterSpec iv = null;
@@ -230,5 +199,9 @@ public class TripleDES {
             }
         }
         return outputFile;
+    }
+
+    public static BlowFish create() {
+        return new BlowFish();
     }
 }

@@ -1,23 +1,18 @@
 package org.midterm.view.page;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.midterm.constant.OptionConstant;
 import org.midterm.view.panel.EncryptionTypeToolBar;
-import org.midterm.view.panel.file.SymmetricEncryptFilePanel;
-import org.midterm.view.panel.text.SymmetricEncryptTextPanel;
+import org.midterm.view.panel.text.AsymmetricTextPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class SymmetricEncryptPanel extends JPanel {
+public class AsymmetricPanel extends JPanel {
     CardLayout cardLayout = new CardLayout();
     JPanel contentPanel = new JPanel(cardLayout);
 
-    public SymmetricEncryptPanel() {
+    public AsymmetricPanel() {
         setLayout(new BorderLayout());
-        add(new JLabel("Symmetric Encryption Generation"), BorderLayout.CENTER);
 
         EncryptionTypeToolBar toolBar = new EncryptionTypeToolBar();
         toolBar.setModeChangeListener(mode -> {
@@ -28,13 +23,9 @@ public class SymmetricEncryptPanel extends JPanel {
             }
         });
 
-        SymmetricEncryptTextPanel textEncryptPanel = new SymmetricEncryptTextPanel();
-        SymmetricEncryptFilePanel fileEncryptPanel = new SymmetricEncryptFilePanel();
+        AsymmetricTextPanel asymmetricTextPanel = AsymmetricTextPanel.create();
 
-
-
-        contentPanel.add(textEncryptPanel, OptionConstant.TEXT_PANEL);
-        contentPanel.add(fileEncryptPanel, OptionConstant.FILE_PANEL);
+        contentPanel.add(asymmetricTextPanel, OptionConstant.TEXT_PANEL);
 
         add(toolBar, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);

@@ -5,7 +5,7 @@ public class OptionConstant {
     private OptionConstant() {
         throw new AssertionError();
     }
-
+    public static final String CLASSIC_ENCRYPT = "Classic Encryption";
     public static final String ASYMMETRIC_ENCRYPT = "Asymmetric Encrypt";
     public static final String DIGITAL_SIGNATURE = "Digital Signature";
     public static final String SYMMETRIC_ENCRYPT = "Symmetric Encrypt";

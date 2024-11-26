@@ -1,19 +1,17 @@
 package org.midterm.view.page;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import org.midterm.constant.OptionConstant;
 import org.midterm.view.panel.EncryptionTypeToolBar;
-import org.midterm.view.panel.file.AsymmetricEncryptFilePanel;
-import org.midterm.view.panel.text.AsymmetricEncryptTextPanel;
+import org.midterm.view.panel.text.ClassicEncryptTextPanel;
 
 import javax.swing.*;
 import java.awt.*;
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AsymmetricEncryptPanel extends JPanel {
+
+public class ClassicEncryptPanel extends JPanel {
     CardLayout cardLayout = new CardLayout();
     JPanel contentPanel = new JPanel(cardLayout);
-    public AsymmetricEncryptPanel() {
+
+    public ClassicEncryptPanel() {
         setLayout(new BorderLayout());
 
         EncryptionTypeToolBar toolBar = new EncryptionTypeToolBar();
@@ -25,12 +23,9 @@ public class AsymmetricEncryptPanel extends JPanel {
             }
         });
 
-        AsymmetricEncryptTextPanel textEncryptPanel = new AsymmetricEncryptTextPanel();
+        ClassicEncryptTextPanel classicEncryptPanel = new ClassicEncryptTextPanel();
 
-        AsymmetricEncryptFilePanel fileEncryptPanel = new AsymmetricEncryptFilePanel();
-
-        contentPanel.add(textEncryptPanel, OptionConstant.TEXT_PANEL);
-        contentPanel.add(fileEncryptPanel, OptionConstant.FILE_PANEL);
+        contentPanel.add(classicEncryptPanel, OptionConstant.TEXT_PANEL);
 
         add(toolBar, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
