@@ -22,7 +22,7 @@ public class MainContentPanel extends JPanel {
         logoLabel.setPreferredSize(new Dimension(100, 100));
         logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        JLabel welcomeLabel = new JLabel("Welcome to the Information Security Tool!");
+        JLabel welcomeLabel = new JLabel("Welcome to the Cryptography Tool!");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
         welcomeLabel.setForeground(Color.decode("#333333"));
 

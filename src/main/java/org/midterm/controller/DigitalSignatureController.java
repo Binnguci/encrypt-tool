@@ -1,7 +1,6 @@
 package org.midterm.controller;
 
 import org.midterm.model.PairKey;
-import org.midterm.service.encryption.asymmetric.RSA;
 import org.midterm.service.encryption.digitalsignature.DSA;
 
 public class DigitalSignatureController {

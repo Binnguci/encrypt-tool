@@ -11,6 +11,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.*;
 import java.util.List;
 
 public class SymmetricTextPanel extends JPanel {
@@ -154,11 +155,14 @@ public class SymmetricTextPanel extends JPanel {
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> performReset(keyField));
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> performSave(keyField));
+        saveButton.addActionListener(e -> performSaveKey(keyField));
+        JButton loadButton = new JButton("Load");
+        loadButton.addActionListener(e -> performLoadKey(keyField));
 
         keyPanel.add(generateButton);
         keyPanel.add(resetButton);
         keyPanel.add(saveButton);
+        keyPanel.add(loadButton);
         return keyPanel;
     }
 
@@ -272,17 +276,7 @@ public class SymmetricTextPanel extends JPanel {
         field.setText("");
     }
 
-    private void performSave(JTextField field) {
-        String algorithm = (String) algorithmComboBox.getSelectedItem();
-        String key = field.getText();
-        if (algorithm != null && key != null && !key.isEmpty()) {
-            KeyManager.saveKey(algorithm, key);
-            JOptionPane.showMessageDialog(null, "Key saved successfully!");
-        } else {
-            JOptionPane.showMessageDialog(null, "Key cannot be empty!");
-        }
 
-    }
 
     private void performGenerateIV() throws Exception {
         String algorithm = (String) algorithmComboBox.getSelectedItem();
@@ -332,13 +326,67 @@ public class SymmetricTextPanel extends JPanel {
             switch (selectedAlgorithm) {
                 case AlgorithmsConstant.RC4:
                     ivField.setEnabled(false);
-
                 case null:
                 default:
                     break;
             }
             revalidate();
             repaint();
+        }
+    }
+
+    private void performSaveKey(JTextField field) {
+        String algorithm = (String) algorithmComboBox.getSelectedItem();
+        String key = field.getText();
+        if (algorithm != null && key != null && !key.isEmpty()) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn đường dẫn để lưu Key");
+            int userSelection = fileChooser.showSaveDialog(null);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                try (FileWriter writer = new FileWriter(fileToSave)) {
+                    writer.write("Thuật toán: " + algorithm + "\n");
+                    writer.write("Key: " + key + "\n");
+                    JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "Lỗi khi lưu file: " + ex.getMessage());
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
+        }
+    }
+
+    private void performLoadKey(JTextField field) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file chứa Key");
+
+        int userSelection = fileChooser.showOpenDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToLoad = fileChooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(fileToLoad))) {
+                String line;
+                String algorithm = null;
+                String key = null;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("Thuật toán: ")) {
+                        algorithm = line.substring(12).trim();
+                    } else if (line.startsWith("Key: ")) {
+                        key = line.substring(5).trim();
+                    }
+                }
+
+                if (algorithm != null && key != null) {
+                    algorithmComboBox.setSelectedItem(algorithm);
+                    field.setText(key);
+                } else {
+                    JOptionPane.showMessageDialog(null, "File không hợp lệ hoặc không đầy đủ thông tin!");
+                }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi đọc file: " + ex.getMessage());
+            }
         }
     }
 }
