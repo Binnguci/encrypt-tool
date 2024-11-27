@@ -41,13 +41,12 @@ public class EncryptionConfigFactory {
                     "CTS", List.of("NoPadding")
             ),
             AlgorithmsConstant.BLOWFISH, Map.of(
-                    "CBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-                    "ECB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-                    "CFB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-                    "OFB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-                    "PCBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
-                    "CTR", List.of("NoPadding"),
-                    "CTS", List.of("NoPadding")
+                    "ECB", Arrays.asList("PKCS5Padding", "ISO10126Padding"),
+                    "CBC", Arrays.asList("PKCS5Padding", "ISO10126Padding"),
+                    "CFB", Arrays.asList("PKCS5Padding", "ISO10126Padding"),
+                    "OFB", Arrays.asList("PKCS5Padding", "ISO10126Padding"),
+                    "PCBC", Arrays.asList("PKCS5Padding", "ISO10126Padding"),
+                    "CTR", List.of("NoPadding")
             ),
             AlgorithmsConstant.TRIPLEDES, Map.of(
                     "CBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),

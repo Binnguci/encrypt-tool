@@ -11,7 +11,8 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 public class BlowFish {
-    public static String generateKey(int keySize) throws Exception {
+
+    public static String generateKey(int keySize) throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
         keyGenerator.init(keySize);
         SecretKey secretKey = keyGenerator.generateKey();
@@ -24,65 +25,67 @@ public class BlowFish {
         return Base64.getEncoder().encodeToString(iv);
     }
 
-
     private static SecretKey convertBase64ToKey(String base64Key) {
-        byte[] decodedKey = Base64.getDecoder().decode(base64Key);
-        return new SecretKeySpec(decodedKey, "Blowfish");
+        return new SecretKeySpec(Base64.getDecoder().decode(base64Key), "Blowfish");
     }
 
     private static IvParameterSpec convertBase64ToIv(String base64Iv) {
-        byte[] decodedIv = Base64.getDecoder().decode(base64Iv);
-        return new IvParameterSpec(decodedIv);
+        return new IvParameterSpec(Base64.getDecoder().decode(base64Iv));
+    }
+
+    private static void checkKeyNotNullOrEmpty(String secretKeyBase64) {
+        if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
+            throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
+        }
+    }
+
+    private static void checkIvNotNullOrEmpty(String base64Iv, String mode) {
+        if (!"ECB".equalsIgnoreCase(mode) && (base64Iv == null || base64Iv.isEmpty())) {
+            throw new IllegalArgumentException("IV không được null hoặc rỗng với chế độ không phải ECB.");
+        }
+    }
+
+    private static Cipher getCipherInstance(String mode, String padding, String secretKeyBase64, String base64Iv, String transformation)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException {
+        SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
+        Cipher cipher = Cipher.getInstance(transformation);
+        if ("ECB".equalsIgnoreCase(mode)) {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        } else {
+            IvParameterSpec iv = convertBase64ToIv(base64Iv);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+        }
+        return cipher;
     }
 
     public String encryptText(String base64Iv, String secretKeyBase64, String plainText, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
+        checkKeyNotNullOrEmpty(secretKeyBase64);
+        checkIvNotNullOrEmpty(base64Iv, mode);
 
-        if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
-            throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
-        }
         String transformation = "Blowfish/" + mode + "/" + padding;
+        Cipher cipher = getCipherInstance(mode, padding, secretKeyBase64, base64Iv, transformation);
 
-        SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
-        Cipher cipher = Cipher.getInstance(transformation);
-
-        if ("ECB".equalsIgnoreCase(mode)) {
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        } else {
-            if (base64Iv == null || base64Iv.isEmpty()) {
-                throw new IllegalArgumentException("IV không được null hoặc rỗng với chế độ không phải ECB.");
-            }
-            IvParameterSpec iv = convertBase64ToIv(base64Iv);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
-        }
         byte[] cipherText = cipher.doFinal(plainText.getBytes());
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-    public String decryptText(String base64Iv, String secretKeyBase64,String cipherTextBase64,  String mode, String padding)
+    public String decryptText(String base64Iv, String secretKeyBase64, String cipherTextBase64, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
-
-        if (secretKeyBase64 == null || secretKeyBase64.isEmpty()) {
-            throw new IllegalArgumentException("Secret key không được rỗng hoặc null.");
-        }
+        checkKeyNotNullOrEmpty(secretKeyBase64);
+        checkIvNotNullOrEmpty(base64Iv, mode);
 
         String transformation = "Blowfish/" + mode + "/" + padding;
-
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
-
-        if ("ECB".equalsIgnoreCase(mode)) {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        } else {
-            if (base64Iv == null || base64Iv.isEmpty()) {
-                throw new IllegalArgumentException("IV không được null hoặc rỗng với chế độ không phải ECB.");
-            }
-            IvParameterSpec iv = convertBase64ToIv(base64Iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
+        IvParameterSpec iv = null;
+        if (!"ECB".equalsIgnoreCase(mode)) {
+            iv = convertBase64ToIv(base64Iv);
         }
 
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
         byte[] cipherTextBytes = Base64.getDecoder().decode(cipherTextBase64);
         byte[] plainTextBytes = cipher.doFinal(cipherTextBytes);
         return new String(plainTextBytes);
@@ -91,41 +94,38 @@ public class BlowFish {
     public String encryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
+        return processFile(base64Iv, baseSecretKey, inputFile, mode, padding, Cipher.ENCRYPT_MODE);
+    }
+
+    public String decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
+        return processFile(base64Iv, baseSecretKey, inputFile, mode, padding, Cipher.DECRYPT_MODE);
+    }
+
+    private String processFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding, int cipherMode)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
+
         File inputFileObj = new File(inputFile);
-        System.out.println(inputFileObj);
-        String parentPath = inputFileObj.getParent(); // Lấy thư mục chứa file nguồn
-        String fileName = inputFileObj.getName(); // Lấy tên file nguồn
-        String outputFile = null;
-        int dotIndex = fileName.lastIndexOf('.'); // Tìm dấu chấm cuối cùng (nếu có)
-        if (dotIndex != -1) { // Nếu file có phần mở rộng
-            outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_encrypt" + fileName.substring(dotIndex);
-        } else { // Nếu file không có phần mở rộng
-            outputFile = parentPath + File.separator + fileName + "_encrypt";
-        }
+        String outputFile = generateOutputFilePath(inputFileObj, cipherMode == Cipher.ENCRYPT_MODE ? "_encrypt" : "_decrypt");
 
         String transformation = "Blowfish/" + mode + "/" + padding;
-
         SecretKey secretKey = convertBase64ToKey(baseSecretKey);
-        IvParameterSpec iv = null;
-
-        if (base64Iv != null && !base64Iv.isEmpty()) {
-            iv = convertBase64ToIv(base64Iv);
-        }
+        IvParameterSpec iv = convertBase64ToIv(base64Iv);
 
         Cipher cipher = Cipher.getInstance(transformation);
-
-        // Kiểm tra mode, nếu là ECB thì không sử dụng IV
-        if (iv != null && !mode.equalsIgnoreCase("ECB")) {
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, iv);
+        if ("ECB".equalsIgnoreCase(mode)) {
+            cipher.init(cipherMode, secretKey);
         } else {
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            cipher.init(cipherMode, secretKey, iv);
         }
 
         try (InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
              OutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile))) {
 
-            if (iv != null && !mode.equalsIgnoreCase("ECB")) {
-                os.write(iv.getIV()); // Ghi IV vào file đầu tiên
+            if (!"ECB".equalsIgnoreCase(mode)) {
+                os.write(iv.getIV());
             }
 
             byte[] buffer = new byte[10240];
@@ -145,58 +145,16 @@ public class BlowFish {
         return outputFile;
     }
 
-    public String decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
-            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
-            IOException, IllegalBlockSizeException, BadPaddingException {
+    private String generateOutputFilePath(File inputFileObj, String suffix) {
+        String parentPath = inputFileObj.getParent();
+        String fileName = inputFileObj.getName();
+        String outputFile;
+        int dotIndex = fileName.lastIndexOf('.');
 
-        File inputFileObj = new File(inputFile);
-        String parentPath = inputFileObj.getParent(); // Thư mục chứa file nguồn
-        String fileName = inputFileObj.getName(); // Tên file nguồn
-        String outputFile = null;
-
-        int dotIndex = fileName.lastIndexOf('.'); // Tìm dấu chấm cuối cùng (nếu có)
         if (dotIndex != -1) {
-            outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_decrypt" + fileName.substring(dotIndex);
+            outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + suffix + fileName.substring(dotIndex);
         } else {
-            outputFile = parentPath + File.separator + fileName + "_decrypt";
-        }
-
-        String transformation = "Blowfish/" + mode + "/" + padding;
-
-        SecretKey secretKey = convertBase64ToKey(baseSecretKey);
-        IvParameterSpec iv = null;
-
-        // Tạo IV nếu có base64Iv
-        if (base64Iv != null && !base64Iv.isEmpty()) {
-            iv = convertBase64ToIv(base64Iv);
-        }
-
-        Cipher cipher = Cipher.getInstance(transformation);
-
-        // Khởi tạo Cipher
-        if (iv != null && !mode.equalsIgnoreCase("ECB")) {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, iv);
-        } else {
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        }
-
-        try (InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
-             OutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile))) {
-
-            byte[] buffer = new byte[10240];
-            int bytesRead;
-
-            while ((bytesRead = is.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    os.write(output);
-                }
-            }
-
-            byte[] outputBytes = cipher.doFinal();
-            if (outputBytes != null) {
-                os.write(outputBytes);
-            }
+            outputFile = parentPath + File.separator + fileName + suffix;
         }
         return outputFile;
     }

@@ -62,7 +62,7 @@ public class SymmetricTextPanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBorder(BorderFactory.createTitledBorder("Select Algorithm"));
 
-        String[] algorithms = {AlgorithmsConstant.AES, AlgorithmsConstant.DES, AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.TRIPLEDES, AlgorithmsConstant.RC4};
+        String[] algorithms = {AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.AES, AlgorithmsConstant.DES,  AlgorithmsConstant.TRIPLEDES, AlgorithmsConstant.RC4};
         algorithmComboBox = new JComboBox<>(algorithms);
         algorithmComboBox.addActionListener(e ->
                 updateEncryptionConfig());
@@ -74,31 +74,37 @@ public class SymmetricTextPanel extends JPanel {
 
     private void updateEncryptionConfig() {
         String algorithm = (String) algorithmComboBox.getSelectedItem();
-        new AlgorithmSelectionListener();
-        // Update mode options
+
         List<String> modes = EncryptionConfigFactory.getModes(algorithm);
         modeComboBox.setModel(new DefaultComboBoxModel<>(modes.toArray(new String[0])));
 
-        paddingComboBox.setModel(new DefaultComboBoxModel<>(new String[]{"NoPadding"}));
+        if (!modes.isEmpty()) {
+            updatePaddings(algorithm, modes.get(0));
+        }
 
-        modeComboBox.addActionListener(e ->{
+        modeComboBox.addActionListener(e -> {
             String selectedMode = (String) modeComboBox.getSelectedItem();
-            List<String> paddings = EncryptionConfigFactory.getPaddings(algorithm, selectedMode);
-            paddingComboBox.setModel(new DefaultComboBoxModel<>(paddings.toArray(new String[0])));
+            updatePaddings(algorithm, selectedMode);
         });
 
-        // Update key sizes
         List<Integer> keySizes = EncryptionConfigFactory.getKeySizes(algorithm);
         keySizeComboBox.setModel(new DefaultComboBoxModel<>(keySizes.toArray(new Integer[0])));
 
-        // Update IV size
+        // Đặt kích thước IV
         int ivSize = EncryptionConfigFactory.getIvSize(algorithm);
         ivSizeLabel.setText("IV Size: " + ivSize);
 
+        // Nạp khóa đã lưu (nếu có)
         String savedKey = KeyManager.loadKey(algorithm);
-        keyField.setText(savedKey);
-        ivField.setText("");
+        keyField.setText(savedKey != null ? savedKey : "");
+        ivField.setText(""); // Đặt lại trường IV
     }
+
+    private void updatePaddings(String algorithm, String mode) {
+        List<String> paddings = EncryptionConfigFactory.getPaddings(algorithm, mode);
+        paddingComboBox.setModel(new DefaultComboBoxModel<>(paddings.toArray(new String[0])));
+    }
+
 
     private JPanel createEncryptionConfigPanel() {
         JPanel panel = new JPanel();
@@ -191,7 +197,6 @@ public class SymmetricTextPanel extends JPanel {
     private JPanel createTextInputPanel() {
         JPanel textInputPanel = new JPanel();
         textInputPanel.setLayout(new BorderLayout());
-
         textArea = new JTextArea(5, 30);
         textArea.setWrapStyleWord(true);
         textArea.setLineWrap(true);

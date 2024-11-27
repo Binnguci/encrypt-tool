@@ -28,7 +28,7 @@ public class ClassicEncryptTextPanel extends JPanel {
     private JComboBox<String> aComboBox;
     private JComboBox<String> bComboBox;
     private JComboBox<String> languageComboBox;
-    private JButton generateButton, saveButton, resetButton, generateSubsButton, saveSubButton, resetSubButton, loadkeyButton;
+    private JButton generateButton, saveButton, resetButton, generateSubsButton, saveSubButton, resetSubButton, loadSubKeyButton, loadKeyButton;
     private JTextArea textArea;
     private JTextArea resultArea;
 
@@ -75,7 +75,6 @@ public class ClassicEncryptTextPanel extends JPanel {
         textArea.setLineWrap(true);
         addPlaceholder(textArea, "Enter your text here...");
         textInputPanel.setBorder(BorderFactory.createTitledBorder("Input Text"));
-
         JScrollPane scrollPane = new JScrollPane(textArea);
         textInputPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -141,65 +140,47 @@ public class ClassicEncryptTextPanel extends JPanel {
             keyField.setText(generatedKey);
         });
 
-        // Nút Reset
         resetButton = new JButton("Reset");
-        resetButton.addActionListener(e -> keyField.setText("")); // Xóa nội dung keyField
+        resetButton.addActionListener(e -> keyField.setText(""));
 
-        // Nút Save
         saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> {
-            String algorithm = (String) algorithmComboBox.getSelectedItem();
-            String key = substitutionField.getText();
-            if (algorithm != null && key != null && !key.isEmpty()) {
-                KeyManager.saveKey(algorithm, key);
-                JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
-            } else {
-                JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
-            }
-
-        });
+        saveButton.addActionListener(e -> performSaveKey());
+        loadKeyButton = new JButton("Load");
+        loadKeyButton.addActionListener(e -> performLoadKey(keyField));
 
         keyPanel.add(generateButton);
         keyPanel.add(resetButton);
         keyPanel.add(saveButton);
+        keyPanel.add(loadKeyButton);
         return keyPanel;
     }
 
     private JPanel createSubstitutionPanel() {
-        // Panel chứa Substitution Table và các nút
         JPanel substitutionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        substitutionPanel.add(new JLabel("Substitution Table:"));
+        substitutionPanel.add(new JLabel("Substitution:"));
 
-        substitutionField = new JTextField(20); // Trường nhập Substitution Table
+        substitutionField = new JTextField(20);
         substitutionPanel.add(substitutionField);
 
-        // Nút Generate
         generateSubsButton = new JButton("Generate");
         generateSubsButton.addActionListener(e -> {
-            // Thay đổi ngôn ngữ nếu cần
             String language = (String) languageComboBox.getSelectedItem();
             String generatedKey = ClassicController.generateSubstitutionKey(language);
             substitutionField.setText(generatedKey);
         });
         substitutionPanel.add(generateSubsButton);
 
-        // Nút Reset
         resetSubButton = new JButton("Reset");
         resetSubButton.addActionListener(e -> substitutionField.setText("")); // Xóa nội dung
         substitutionPanel.add(resetSubButton);
 
-        //Nút Lưu
         saveSubButton = new JButton("Save");
-        saveSubButton.addActionListener(e -> {
-            performSaveKey();
-        });
+        saveSubButton.addActionListener(e -> performSaveKey());
         substitutionPanel.add(saveSubButton);
 
-        loadkeyButton = new JButton("Load");
-        substitutionPanel.add(loadkeyButton);
-        loadkeyButton.addActionListener(e -> {
-            performLoadKey();
-        });
+        loadSubKeyButton = new JButton("Load");
+        substitutionPanel.add(loadSubKeyButton);
+        loadSubKeyButton.addActionListener(e -> performLoadKey(substitutionField));
 
         return substitutionPanel;
     }
@@ -211,14 +192,13 @@ public class ClassicEncryptTextPanel extends JPanel {
         encryptButton.addActionListener(e -> handleEncryptAction());
         JButton decryptButton = new JButton("Decrypt");
         decryptButton.addActionListener(e -> handleDecryptAction());
-        CustomColorButton.setButtonPressColor(encryptButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(decryptButton, "#F26680", Color.WHITE);
+        CustomColorButton.setButtonPressColor(encryptButton, "#0583F2", Color.WHITE);
+        CustomColorButton.setButtonPressColor(decryptButton, "#0583F2", Color.WHITE);
         buttonPanel.add(encryptButton);
         buttonPanel.add(decryptButton);
         return buttonPanel;
     }
 
-    // xử lý sự kiện mã hóa
     private void handleEncryptAction() {
         ClassicAlgorithm classicAlgorithm = collection();
         String inputText = textArea.getText();
@@ -235,7 +215,6 @@ public class ClassicEncryptTextPanel extends JPanel {
 
     }
 
-    // Xu ly su kien giai ma
     private void handleDecryptAction() {
         ClassicAlgorithm classicAlgorithm = collection();
         String inputText = textArea.getText();
@@ -269,16 +248,20 @@ public class ClassicEncryptTextPanel extends JPanel {
 
     private JPanel createButtonEndPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton copyButton = new JButton("Copy");
+        var copyButton = new JButton("Copy");
         JButton resetButton = new JButton("Reset");
-        CustomColorButton.setButtonPressColor(copyButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(resetButton, "#F26680", Color.WHITE);
+        CustomColorButton.setButtonPressColor(copyButton, "#0583F2", Color.WHITE);
+        CustomColorButton.setButtonPressColor(resetButton, "#0583F2", Color.WHITE);
         buttonPanel.add(copyButton);
         buttonPanel.add(resetButton);
         return buttonPanel;
     }
 
     private void addPlaceholder(JTextArea textArea, String placeholder) {
+        setPlaceholder(textArea, placeholder);
+    }
+
+    static void setPlaceholder(JTextArea textArea, String placeholder) {
         textArea.setText(placeholder);
         textArea.setForeground(Color.GRAY);
 
@@ -314,7 +297,8 @@ public class ClassicEncryptTextPanel extends JPanel {
     }
 
     private void hideAllParameterFields() {
-        loadkeyButton.setEnabled(false);
+        loadSubKeyButton.setEnabled(false);
+        loadKeyButton.setEnabled(false);
         generateButton.setEnabled(false);
         saveButton.setEnabled(false);
         resetButton.setEnabled(false);
@@ -344,6 +328,7 @@ public class ClassicEncryptTextPanel extends JPanel {
                     break;
                 case AlgorithmsConstant.VIGENERE:
                     keyField.setEnabled(true);
+                    loadKeyButton.setEnabled(true);
                     generateButton.setEnabled(true);
                     saveButton.setEnabled(true);
                     resetButton.setEnabled(true);
@@ -415,7 +400,7 @@ public class ClassicEncryptTextPanel extends JPanel {
         }
     }
 
-    private void performLoadKey() {
+    private void performLoadKey(JTextField jTextField) {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Chọn file chứa Key");
 
@@ -438,7 +423,7 @@ public class ClassicEncryptTextPanel extends JPanel {
 
                 if (algorithm != null && key != null) {
                     algorithmComboBox.setSelectedItem(algorithm);
-                    substitutionField.setText(key);
+                    jTextField.setText(key);
                 } else {
                     JOptionPane.showMessageDialog(null, "File không hợp lệ hoặc không đầy đủ thông tin!");
                 }
@@ -447,8 +432,6 @@ public class ClassicEncryptTextPanel extends JPanel {
             }
         }
     }
-
-
 
     private ClassicAlgorithm collection() {
         String selectedAlgorithm = (String) algorithmComboBox.getSelectedItem();

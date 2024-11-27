@@ -66,19 +66,19 @@ public class HashTextPanel extends JPanel {
 //    }
 
     private JPanel createTextInputPanel() {
-        JPanel textInputPanel = new JPanel();
-        textInputPanel.setLayout(new BorderLayout());
+        JPanel hashTextInputPanel = new JPanel();
+        hashTextInputPanel.setLayout(new BorderLayout());
 
         textArea = new JTextArea(5, 30);
         textArea.setWrapStyleWord(true);
         textArea.setLineWrap(true);
         addPlaceholder(textArea, "Enter your text here...");
-        textInputPanel.setBorder(BorderFactory.createTitledBorder("Input Text"));
+        hashTextInputPanel.setBorder(BorderFactory.createTitledBorder("Input Text"));
 
         JScrollPane scrollPane = new JScrollPane(textArea);
-        textInputPanel.add(scrollPane, BorderLayout.CENTER);
+        hashTextInputPanel.add(scrollPane, BorderLayout.CENTER);
 
-        return textInputPanel;
+        return hashTextInputPanel;
     }
 
     private JPanel createOptionsPanel() {
@@ -117,7 +117,7 @@ public class HashTextPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton encryptButton = new JButton("Hash");
         encryptButton.addActionListener(e -> handleHashAction());
-        CustomColorButton.setButtonPressColor(encryptButton, "#F26680", Color.WHITE);
+        CustomColorButton.setButtonPressColor(encryptButton, "#0583F2", Color.WHITE);
         buttonPanel.add(encryptButton);
         return buttonPanel;
     }
@@ -156,34 +156,15 @@ public class HashTextPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton copyButton = new JButton("Copy");
         JButton resetButton = new JButton("Reset");
-        CustomColorButton.setButtonPressColor(copyButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(resetButton, "#F26680", Color.WHITE);
+        CustomColorButton.setButtonPressColor(copyButton, "#0583F2", Color.WHITE);
+        CustomColorButton.setButtonPressColor(resetButton, "#0583F2", Color.WHITE);
         buttonPanel.add(copyButton);
         buttonPanel.add(resetButton);
         return buttonPanel;
     }
 
     private void addPlaceholder(JTextArea textArea, String placeholder) {
-        textArea.setText(placeholder);
-        textArea.setForeground(Color.GRAY);
-
-        textArea.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (textArea.getText().equals(placeholder)) {
-                    textArea.setText("");
-                    textArea.setForeground(Color.BLACK);
-                }
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (textArea.getText().isEmpty()) {
-                    textArea.setForeground(Color.GRAY);
-                    textArea.setText(placeholder);
-                }
-            }
-        });
+        ClassicEncryptTextPanel.setPlaceholder(textArea, placeholder);
     }
 
 
