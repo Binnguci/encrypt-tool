@@ -10,11 +10,29 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+/**
+ * Lớp hỗ trợ mã hóa và giải mã sử dụng thuật toán Triple DES (DESede).
+ * Cung cấp các chức năng để mã hóa, giải mã chuỗi, tập tin, và các tiện ích
+ * tạo khóa, tạo IV (Initialization Vector).
+ */
 public class TripleDES {
+
+    /**
+     * Tạo một đối tượng mới của TripleDES.
+     *
+     * @return đối tượng TripleDES mới.
+     */
     public static TripleDES create() {
         return new TripleDES();
     }
 
+    /**
+     * Sinh khóa bí mật dùng cho thuật toán Triple DES.
+     *
+     * @param keySize kích thước khóa (112 hoặc 168 bit).
+     * @return khóa bí mật dưới dạng chuỗi Base64.
+     * @throws Exception nếu xảy ra lỗi trong quá trình tạo khóa.
+     */
     public static String generateKey(int keySize) throws Exception {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("DESede");
         keyGenerator.init(keySize);
@@ -22,6 +40,11 @@ public class TripleDES {
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
+    /**
+     * Sinh một IV (Initialization Vector) ngẫu nhiên.
+     *
+     * @return IV dưới dạng chuỗi Base64.
+     */
     public static String generateIv() {
         byte[] iv = new byte[8];
         new SecureRandom().nextBytes(iv);
@@ -38,6 +61,17 @@ public class TripleDES {
         return new IvParameterSpec(decodedIv);
     }
 
+    /**
+     * Mã hóa một chuỗi văn bản.
+     *
+     * @param base64Iv         IV (Base64), có thể null nếu dùng chế độ ECB.
+     * @param secretKeyBase64  khóa bí mật (Base64).
+     * @param plainText        chuỗi văn bản gốc cần mã hóa.
+     * @param mode             chế độ mã hóa (ECB, CBC, CFB, OFB).
+     * @param padding          kiểu padding (PKCS5Padding, NoPadding, v.v.).
+     * @return chuỗi mã hóa dưới dạng Base64.
+     * @throws IllegalArgumentException nếu tham số không hợp lệ.
+     */
     public String encryptText(String base64Iv, String secretKeyBase64, String plainText, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
@@ -63,6 +97,17 @@ public class TripleDES {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
+    /**
+     * Giải mã một chuỗi đã mã hóa.
+     *
+     * @param base64Iv         IV (Base64), có thể null nếu dùng chế độ ECB.
+     * @param secretKeyBase64  khóa bí mật (Base64).
+     * @param cipherText       chuỗi đã mã hóa (Base64).
+     * @param mode             chế độ mã hóa (ECB, CBC, CFB, OFB).
+     * @param padding          kiểu padding (PKCS5Padding, NoPadding, v.v.).
+     * @return chuỗi văn bản gốc đã giải mã.
+     * @throws IllegalArgumentException nếu tham số không hợp lệ.
+     */
     public String decryptText(String base64Iv, String secretKeyBase64, String cipherText, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
@@ -87,7 +132,16 @@ public class TripleDES {
         return new String(plainText);
     }
 
-
+    /**
+     * Mã hóa một tập tin.
+     *
+     * @param base64Iv         IV (Base64), có thể null nếu dùng chế độ ECB.
+     * @param baseSecretKey    khóa bí mật (Base64).
+     * @param inputFile        đường dẫn tập tin gốc.
+     * @param mode             chế độ mã hóa (ECB, CBC, CFB, OFB).
+     * @param padding          kiểu padding (PKCS5Padding, NoPadding, v.v.).
+     * @return đường dẫn tập tin đã mã hóa.
+     */
     public String encryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
@@ -95,7 +149,7 @@ public class TripleDES {
         System.out.println(inputFileObj);
         String parentPath = inputFileObj.getParent();
         String fileName = inputFileObj.getName();
-        String outputFile = null;
+        String outputFile;
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) {
             outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_encrypt" + fileName.substring(dotIndex);
@@ -132,6 +186,16 @@ public class TripleDES {
         return outputFile;
     }
 
+    /**
+     * Giải mã một tập tin.
+     *
+     * @param base64Iv         IV (Base64), có thể null nếu dùng chế độ ECB.
+     * @param baseSecretKey    khóa bí mật (Base64).
+     * @param inputFile        đường dẫn tập tin đã mã hóa.
+     * @param mode             chế độ mã hóa (ECB, CBC, CFB, OFB).
+     * @param padding          kiểu padding (PKCS5Padding, NoPadding, v.v.).
+     * @return đường dẫn tập tin đã giải mã.
+     */
     public String decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
@@ -139,7 +203,7 @@ public class TripleDES {
         File inputFileObj = new File(inputFile);
         String parentPath = inputFileObj.getParent();
         String fileName = inputFileObj.getName();
-        String outputFile = null;
+        String outputFile;
 
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) {

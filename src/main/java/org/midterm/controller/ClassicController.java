@@ -8,19 +8,45 @@ import org.midterm.service.encryption.classic.ShiftCipher;
 import org.midterm.service.encryption.classic.SubstitutionCipher;
 import org.midterm.service.encryption.classic.Vigenere;
 
+/**
+ * Lớp điều khiển cho các thuật toán mã hóa cổ điển.
+ * Cung cấp các phương thức để tạo khóa, mã hóa và giải mã văn bản
+ * sử dụng các thuật toán mã hóa cổ điển như Shift Cipher, Substitution Cipher, Affine Cipher, và Vigenere Cipher.
+ */
 public class ClassicController {
+
+    /**
+     * Tạo khóa mã hóa cho thuật toán Substitution Cipher dựa trên ngôn ngữ đầu vào.
+     *
+     * @param language ngôn ngữ được sử dụng để tạo khóa (ví dụ: "English", "Vietnamese").
+     * @return khóa mã hóa được tạo.
+     */
     public static String generateSubstitutionKey(String language) {
         SubstitutionCipher substitutionCipher = SubstitutionCipher.create();
         return substitutionCipher.generateKey(language);
     }
 
+    /**
+     * Tạo khóa cho thuật toán Vigenere Cipher dựa trên văn bản gốc và ngôn ngữ.
+     *
+     * @param language   ngôn ngữ được sử dụng (ví dụ: "English", "Vietnamese").
+     * @param plaintext  văn bản gốc để tạo khóa.
+     * @return khóa được tạo từ văn bản gốc.
+     */
     public static String generateKey(String language, String plaintext) {
         Vigenere vigenere = Vigenere.create();
         return vigenere.generateKey(plaintext, language);
     }
 
+    /**
+     * Mã hóa văn bản đầu vào bằng một thuật toán mã hóa cổ điển được chỉ định.
+     *
+     * @param classicAlgorithm đối tượng chứa thông tin về thuật toán mã hóa, ngôn ngữ, và khóa.
+     * @param inputText        văn bản cần mã hóa.
+     * @return văn bản đã được mã hóa hoặc null nếu thuật toán không hợp lệ.
+     */
     public static String encrypt(ClassicAlgorithm classicAlgorithm, String inputText) {
-        String result = "";
+        String result;
         switch (classicAlgorithm.getName()) {
             case AlgorithmsConstant.SHIFT:
                 ShiftCipher shiftCipher = ShiftCipher.create();
@@ -45,8 +71,15 @@ public class ClassicController {
         return result;
     }
 
+    /**
+     * Giải mã văn bản đầu vào bằng một thuật toán mã hóa cổ điển được chỉ định.
+     *
+     * @param classicAlgorithm đối tượng chứa thông tin về thuật toán mã hóa, ngôn ngữ, và khóa.
+     * @param inputText        văn bản cần giải mã.
+     * @return văn bản đã được giải mã hoặc null nếu thuật toán không hợp lệ.
+     */
     public static String decrypt(ClassicAlgorithm classicAlgorithm, String inputText) {
-        String result = "";
+        String result;
         switch (classicAlgorithm.getName()) {
             case AlgorithmsConstant.SHIFT:
                 ShiftCipher shiftCipher = ShiftCipher.create();

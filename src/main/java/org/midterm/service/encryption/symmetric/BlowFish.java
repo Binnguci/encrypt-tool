@@ -10,8 +10,31 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+/**
+ * Lớp BlowFish cung cấp các phương thức mã hóa và giải mã dữ liệu sử dụng thuật toán Blowfish.
+ * Bao gồm các tính năng:
+ * - Tạo khóa bí mật (secret key) và vector khởi tạo (IV).
+ * - Mã hóa và giải mã chuỗi văn bản.
+ * - Mã hóa và giải mã tệp.
+ *
+ * Các chế độ mã hóa được hỗ trợ:
+ * - ECB: Electronic Codebook
+ * - CBC: Cipher Block Chaining
+ *
+ * Padding được hỗ trợ:
+ * - PKCS5Padding, NoPadding, ...
+ *
+ * Các phương thức trong lớp này sử dụng Base64 để biểu diễn dữ liệu nhị phân ở dạng chuỗi.
+ */
 public class BlowFish {
 
+    /**
+     * Tạo một khóa bí mật mới với kích thước xác định.
+     *
+     * @param keySize Kích thước khóa (ví dụ: 128, 192, hoặc 256 bit).
+     * @return Chuỗi biểu diễn khóa bí mật dưới dạng Base64.
+     * @throws NoSuchAlgorithmException Nếu thuật toán Blowfish không được hỗ trợ.
+     */
     public String generateKey(int keySize) throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
         keyGenerator.init(keySize);
@@ -19,6 +42,11 @@ public class BlowFish {
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
+    /**
+     * Tạo một vector khởi tạo (IV) ngẫu nhiên.
+     *
+     * @return Chuỗi biểu diễn IV dưới dạng Base64.
+     */
     public static String generateIv() {
         byte[] iv = new byte[8];
         new SecureRandom().nextBytes(iv);
@@ -58,6 +86,17 @@ public class BlowFish {
         return cipher;
     }
 
+    /**
+     * Mã hóa văn bản bằng thuật toán Blowfish.
+     *
+     * @param base64Iv Vector khởi tạo (IV) ở dạng Base64.
+     * @param secretKeyBase64 Khóa bí mật ở dạng Base64.
+     * @param plainText Văn bản gốc cần mã hóa.
+     * @param mode Chế độ mã hóa (ECB, CBC, ...).
+     * @param padding Kiểu padding (PKCS5Padding, NoPadding, ...).
+     * @return Chuỗi văn bản đã được mã hóa dưới dạng Base64.
+     * @throws Exception Nếu có lỗi trong quá trình mã hóa.
+     */
     public String encryptText(String base64Iv, String secretKeyBase64, String plainText, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
@@ -71,6 +110,17 @@ public class BlowFish {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
+    /**
+     * Giải mã văn bản đã được mã hóa.
+     *
+     * @param base64Iv Vector khởi tạo (IV) ở dạng Base64.
+     * @param secretKeyBase64 Khóa bí mật ở dạng Base64.
+     * @param cipherTextBase64 Chuỗi văn bản đã được mã hóa ở dạng Base64.
+     * @param mode Chế độ mã hóa (ECB, CBC, ...).
+     * @param padding Kiểu padding (PKCS5Padding, NoPadding, ...).
+     * @return Chuỗi văn bản gốc đã được giải mã.
+     * @throws Exception Nếu có lỗi trong quá trình giải mã.
+     */
     public String decryptText(String base64Iv, String secretKeyBase64, String cipherTextBase64, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
@@ -91,12 +141,34 @@ public class BlowFish {
         return new String(plainTextBytes);
     }
 
+    /**
+     * Mã hóa tệp bằng thuật toán Blowfish.
+     *
+     * @param base64Iv Vector khởi tạo (IV) ở dạng Base64.
+     * @param baseSecretKey Khóa bí mật ở dạng Base64.
+     * @param inputFile Đường dẫn tới tệp cần mã hóa.
+     * @param mode Chế độ mã hóa (ECB, CBC, ...).
+     * @param padding Kiểu padding (PKCS5Padding, NoPadding, ...).
+     * @return Đường dẫn tới tệp đã được mã hóa.
+     * @throws Exception Nếu có lỗi trong quá trình mã hóa tệp.
+     */
     public String encryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
         return processFile(base64Iv, baseSecretKey, inputFile, mode, padding, Cipher.ENCRYPT_MODE);
     }
 
+    /**
+     * Giải mã tệp đã được mã hóa.
+     *
+     * @param base64Iv Vector khởi tạo (IV) ở dạng Base64.
+     * @param baseSecretKey Khóa bí mật ở dạng Base64.
+     * @param inputFile Đường dẫn tới tệp đã được mã hóa.
+     * @param mode Chế độ mã hóa (ECB, CBC, ...).
+     * @param padding Kiểu padding (PKCS5Padding, NoPadding, ...).
+     * @return Đường dẫn tới tệp đã được giải mã.
+     * @throws Exception Nếu có lỗi trong quá trình giải mã tệp.
+     */
     public String decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
@@ -163,6 +235,11 @@ public class BlowFish {
         return outputFile;
     }
 
+    /**
+     * Tạo một đối tượng BlowFish mới.
+     *
+     * @return Đối tượng BlowFish.
+     */
     public static BlowFish create() {
         return new BlowFish();
     }

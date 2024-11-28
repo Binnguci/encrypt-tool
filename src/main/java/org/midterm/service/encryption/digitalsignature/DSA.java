@@ -11,12 +11,34 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+/**
+ * Lớp cung cấp các phương thức để tạo chữ ký số (Digital Signature)
+ * và xác thực tính toàn vẹn của dữ liệu bằng thuật toán DSA (Digital Signature Algorithm).
+ * <p>
+ * Chức năng chính:
+ * - Tạo cặp khóa (public/private) để sử dụng với chữ ký số.
+ * - Ký số dữ liệu hoặc tệp tin bằng khóa riêng tư.
+ * - Xác thực chữ ký số bằng khóa công khai.
+ * </p>
+ */
 public class DSA {
 
+    /**
+     * Tạo một đối tượng DSA mới.
+     *
+     * @return đối tượng {@link DSA}.
+     */
     public static DSA create() {
         return new DSA();
     }
 
+    /**
+     * Tạo cặp khóa DSA.
+     *
+     * @param keySize kích thước của khóa (ví dụ: 1024, 2048).
+     * @return đối tượng {@link PairKey} chứa khóa công khai và khóa riêng tư được mã hóa Base64.
+     * @throws Exception nếu xảy ra lỗi trong quá trình tạo khóa.
+     */
     public PairKey generateKeyPair(int keySize) throws Exception {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DSA");
         keyPairGenerator.initialize(keySize);
@@ -28,6 +50,15 @@ public class DSA {
         return pairKey;
     }
 
+    /**
+     * Ký số một chuỗi dữ liệu bằng khóa riêng tư.
+     *
+     * @param data chuỗi dữ liệu cần ký.
+     * @param privateKeyBase64 khóa riêng tư (dạng mã hóa Base64).
+     * @param algorithm thuật toán sử dụng để ký (ví dụ: "SHA256withDSA").
+     * @return chuỗi chữ ký số (dạng mã hóa Base64).
+     * @throws Exception nếu xảy ra lỗi trong quá trình ký.
+     */
     public String signData(String data, String privateKeyBase64, String algorithm) throws Exception {
         byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
         PrivateKey privateKey = KeyFactory.getInstance("DSA")
@@ -40,6 +71,15 @@ public class DSA {
         return Base64.getEncoder().encodeToString(digitalSignature);
     }
 
+    /**
+     * Ký số một tệp tin bằng khóa riêng tư.
+     *
+     * @param path đường dẫn tới tệp cần ký.
+     * @param privateKeyBase64 khóa riêng tư (dạng mã hóa Base64).
+     * @param algorithm thuật toán sử dụng để ký (ví dụ: "SHA256withDSA").
+     * @return chuỗi chữ ký số (dạng mã hóa Base64).
+     * @throws Exception nếu xảy ra lỗi trong quá trình ký.
+     */
     public String signFile(String path, String privateKeyBase64, String algorithm) throws Exception {
         File file = new File(path);
         byte[] fileBytes = readFileToBytes(file);
@@ -55,7 +95,16 @@ public class DSA {
         return Base64.getEncoder().encodeToString(digitalSignature);
     }
 
-
+    /**
+     * Xác thực chữ ký số của một chuỗi dữ liệu.
+     *
+     * @param data chuỗi dữ liệu cần xác thực.
+     * @param signatureBase64 chữ ký số (dạng mã hóa Base64).
+     * @param publicKeyBase64 khóa công khai (dạng mã hóa Base64).
+     * @param algorithm thuật toán sử dụng để xác thực (ví dụ: "SHA256withDSA").
+     * @return {@code true} nếu chữ ký hợp lệ, {@code false} nếu không hợp lệ.
+     * @throws Exception nếu xảy ra lỗi trong quá trình xác thực.
+     */
     public boolean verifySignature(String data, String signatureBase64, String publicKeyBase64, String algorithm) throws Exception {
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
         PublicKey publicKey = KeyFactory.getInstance("DSA")
@@ -69,6 +118,16 @@ public class DSA {
         return signature.verify(digitalSignature);
     }
 
+    /**
+     * Xác thực chữ ký số của một tệp tin.
+     *
+     * @param path đường dẫn tới tệp cần xác thực.
+     * @param signatureBase64 chữ ký số (dạng mã hóa Base64).
+     * @param publicKeyBase64 khóa công khai (dạng mã hóa Base64).
+     * @param algorithm thuật toán sử dụng để xác thực (ví dụ: "SHA256withDSA").
+     * @return {@code true} nếu chữ ký hợp lệ, {@code false} nếu không hợp lệ.
+     * @throws Exception nếu xảy ra lỗi trong quá trình xác thực.
+     */
     public boolean verifyFileSignature(String path, String signatureBase64, String publicKeyBase64, String algorithm) throws Exception {
         File file = new File(path);
         byte[] fileBytes = readFileToBytes(file);
@@ -84,7 +143,13 @@ public class DSA {
         return signature.verify(digitalSignature);
     }
 
-
+    /**
+     * Đọc tệp tin và chuyển đổi thành mảng byte.
+     *
+     * @param file đối tượng {@link File} cần đọc.
+     * @return mảng byte chứa nội dung của tệp.
+     * @throws IOException nếu xảy ra lỗi trong quá trình đọc tệp.
+     */
     private byte[] readFileToBytes(File file) throws IOException {
         try (FileInputStream fis = new FileInputStream(file);
              ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
@@ -97,31 +162,4 @@ public class DSA {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            DSA dsa = DSA.create();
-            String signAlgorithm = "SHA1withDSA";
-
-            int keySize = 1024;
-
-            System.out.println("==== Generating Key Pair ====");
-            PairKey pairKey = dsa.generateKeyPair(keySize);
-            String publicKey = pairKey.getPublicKey();
-            String privateKey = pairKey.getPrivateKey();
-            System.out.println("Public Key: " + publicKey);
-            System.out.println("Private Key: " + privateKey);
-
-            String data = "This is a test message.";
-            System.out.println("\n==== Signing Data ====");
-            String signature = dsa.signData(data, privateKey, signAlgorithm);
-            System.out.println("Digital Signature: " + signature);
-
-            // Xác minh chữ ký
-            System.out.println("\n==== Verifying Signature ====");
-            boolean isVerified = dsa.verifySignature(data, signature, publicKey, signAlgorithm);
-            System.out.println("Signature Verified: " + isVerified);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

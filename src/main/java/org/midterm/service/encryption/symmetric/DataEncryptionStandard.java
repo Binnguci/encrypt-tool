@@ -10,12 +10,28 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+/**
+ * Lớp DataEncryptionStandard cung cấp các phương thức mã hóa và giải mã
+ * sử dụng thuật toán DES (Data Encryption Standard). Lớp hỗ trợ mã hóa/giải mã
+ * cho văn bản và tệp, với nhiều chế độ (mode) và kiểu padding khác nhau.
+ */
 public class DataEncryptionStandard {
 
+    /**
+     * Tạo một đối tượng DataEncryptionStandard mới.
+     *
+     * @return Đối tượng DataEncryptionStandard.
+     */
     public static DataEncryptionStandard create() {
         return new DataEncryptionStandard();
     }
 
+    /**
+     * Tạo một khóa DES ngẫu nhiên.
+     *
+     * @return Khóa DES được mã hóa dưới dạng chuỗi Base64.
+     * @throws NoSuchAlgorithmException Nếu thuật toán DES không được hỗ trợ.
+     */
     public String generateKey() throws NoSuchAlgorithmException {
 
         KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
@@ -23,9 +39,14 @@ public class DataEncryptionStandard {
         return Base64.getEncoder().encodeToString(keyGenerator.generateKey().getEncoded());
     }
 
+    /**
+     * Tạo một IV (Initialization Vector) ngẫu nhiên.
+     *
+     * @return IV được mã hóa dưới dạng chuỗi Base64.
+     */
     public String generateIv() {
         byte[] iv = new byte[8];
-        new SecureRandom().nextBytes(iv); // Sinh ngẫu nhiên IV
+        new SecureRandom().nextBytes(iv);
         return Base64.getEncoder().encodeToString(iv);
     }
 
@@ -40,6 +61,22 @@ public class DataEncryptionStandard {
         return new IvParameterSpec(decodedIv);
     }
 
+    /**
+     * Mã hóa một văn bản bằng thuật toán DES.
+     *
+     * @param base64Iv        IV được mã hóa Base64 (hoặc null nếu sử dụng ECB mode).
+     * @param secretKeyBase64 Khóa bí mật được mã hóa Base64.
+     * @param plainText       Văn bản gốc cần mã hóa.
+     * @param mode            Chế độ mã hóa (ví dụ: ECB, CBC).
+     * @param padding         Kiểu padding (ví dụ: PKCS5Padding).
+     * @return Chuỗi Base64 chứa văn bản đã được mã hóa.
+     * @throws NoSuchPaddingException             Nếu padding không được hỗ trợ.
+     * @throws NoSuchAlgorithmException           Nếu thuật toán DES không được hỗ trợ.
+     * @throws InvalidAlgorithmParameterException Nếu tham số thuật toán không hợp lệ.
+     * @throws InvalidKeyException                Nếu khóa không hợp lệ.
+     * @throws BadPaddingException                Nếu xảy ra lỗi padding.
+     * @throws IllegalBlockSizeException          Nếu kích thước khối không hợp lệ.
+     */
     public String encryptText(String base64Iv, String secretKeyBase64, String plainText, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
@@ -65,7 +102,22 @@ public class DataEncryptionStandard {
         return Base64.getEncoder().encodeToString(cipherText);
     }
 
-
+    /**
+     * Giải mã một văn bản bằng thuật toán DES.
+     *
+     * @param base64Iv        IV được mã hóa Base64 (hoặc null nếu sử dụng ECB mode).
+     * @param secretKeyBase64 Khóa bí mật được mã hóa Base64.
+     * @param cipherTextBase64 Chuỗi Base64 chứa văn bản đã được mã hóa.
+     * @param mode            Chế độ mã hóa (ví dụ: ECB, CBC).
+     * @param padding         Kiểu padding (ví dụ: PKCS5Padding).
+     * @return Văn bản gốc sau khi giải mã.
+     * @throws NoSuchPaddingException             Nếu padding không được hỗ trợ.
+     * @throws NoSuchAlgorithmException           Nếu thuật toán DES không được hỗ trợ.
+     * @throws InvalidAlgorithmParameterException Nếu tham số thuật toán không hợp lệ.
+     * @throws InvalidKeyException                Nếu khóa không hợp lệ.
+     * @throws BadPaddingException                Nếu xảy ra lỗi padding.
+     * @throws IllegalBlockSizeException          Nếu kích thước khối không hợp lệ.
+     */
     public String decryptText(String base64Iv, String secretKeyBase64, String cipherTextBase64,   String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             BadPaddingException, IllegalBlockSizeException {
@@ -94,7 +146,23 @@ public class DataEncryptionStandard {
         return new String(plainTextBytes);
     }
 
-
+    /**
+     * Mã hóa một tệp bằng thuật toán DES.
+     *
+     * @param base64Iv       IV được mã hóa Base64 (hoặc null nếu sử dụng ECB mode).
+     * @param baseSecretKey  Khóa bí mật được mã hóa Base64.
+     * @param inputFile      Đường dẫn đến tệp gốc.
+     * @param mode           Chế độ mã hóa (ví dụ: ECB, CBC).
+     * @param padding        Kiểu padding (ví dụ: PKCS5Padding).
+     * @return Đường dẫn đến tệp đã được mã hóa.
+     * @throws IOException                     Nếu xảy ra lỗi IO.
+     * @throws NoSuchPaddingException          Nếu padding không được hỗ trợ.
+     * @throws NoSuchAlgorithmException        Nếu thuật toán DES không được hỗ trợ.
+     * @throws InvalidAlgorithmParameterException Nếu tham số thuật toán không hợp lệ.
+     * @throws InvalidKeyException             Nếu khóa không hợp lệ.
+     * @throws BadPaddingException             Nếu xảy ra lỗi padding.
+     * @throws IllegalBlockSizeException       Nếu kích thước khối không hợp lệ.
+     */
     public String encryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
@@ -103,7 +171,7 @@ public class DataEncryptionStandard {
         System.out.println(inputFileObj);
         String parentPath = inputFileObj.getParent();
         String fileName = inputFileObj.getName();
-        String outputFile = null;
+        String outputFile;
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) { // Nếu file có phần mở rộng
             outputFile = parentPath + File.separator + fileName.substring(0, dotIndex) + "_encrypt" + fileName.substring(dotIndex);
@@ -139,6 +207,23 @@ public class DataEncryptionStandard {
         return outputFile;
     }
 
+    /**
+     * Giải mã một tệp bằng thuật toán DES.
+     *
+     * @param base64Iv       IV được mã hóa Base64 (hoặc null nếu sử dụng ECB mode).
+     * @param baseSecretKey  Khóa bí mật được mã hóa Base64.
+     * @param inputFile      Đường dẫn đến tệp đã được mã hóa.
+     * @param mode           Chế độ mã hóa (ví dụ: ECB, CBC).
+     * @param padding        Kiểu padding (ví dụ: PKCS5Padding).
+     * @return Đường dẫn đến tệp sau khi giải mã.
+     * @throws IOException                     Nếu xảy ra lỗi IO.
+     * @throws NoSuchPaddingException          Nếu padding không được hỗ trợ.
+     * @throws NoSuchAlgorithmException        Nếu thuật toán DES không được hỗ trợ.
+     * @throws InvalidAlgorithmParameterException Nếu tham số thuật toán không hợp lệ.
+     * @throws InvalidKeyException             Nếu khóa không hợp lệ.
+     * @throws BadPaddingException             Nếu xảy ra lỗi padding.
+     * @throws IllegalBlockSizeException       Nếu kích thước khối không hợp lệ.
+     */
     public String decryptFile(String base64Iv, String baseSecretKey, String inputFile, String mode, String padding)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
             IOException, IllegalBlockSizeException, BadPaddingException {
@@ -146,7 +231,7 @@ public class DataEncryptionStandard {
         File inputFileObj = new File(inputFile);
         String parentPath = inputFileObj.getParent();
         String fileName = inputFileObj.getName();
-        String outputFile = null;
+        String outputFile;
 
         int dotIndex = fileName.lastIndexOf('.');
         if (dotIndex != -1) {
