@@ -86,7 +86,7 @@ public class HashFilePanel extends JPanel {
             public void drop(DropTargetDropEvent event) {
                 event.acceptDrop(DnDConstants.ACTION_COPY);
                 try {
-                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof java.util.List<?> files && files.get(0) instanceof File file) {
+                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof java.util.List<?> files && files.getFirst() instanceof File file) {
                         filePathField.setText(file.getAbsolutePath());
                     }
                 } catch (Exception e) {

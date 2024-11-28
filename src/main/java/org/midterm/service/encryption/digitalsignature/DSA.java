@@ -55,7 +55,7 @@ public class DSA {
             DSA dsa = DSA.create();
             String signAlgorithm = "SHA1withDSA";
 
-            int keySize = 1024; // Độ dài khóa
+            int keySize = 1024;
 
             System.out.println("==== Generating Key Pair ====");
             PairKey pairKey = dsa.generateKeyPair(keySize);
