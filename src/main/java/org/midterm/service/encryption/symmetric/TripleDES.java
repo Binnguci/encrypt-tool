@@ -127,19 +127,7 @@ public class TripleDES {
                 os.write(iv.getIV());
             }
 
-            byte[] buffer = new byte[10240];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    os.write(output);
-                }
-            }
-
-            byte[] outputBytes = cipher.doFinal();
-            if (outputBytes != null) {
-                os.write(outputBytes);
-            }
+            BlowFish.writeFile(cipher, is, os);
         }
         return outputFile;
     }
@@ -180,20 +168,7 @@ public class TripleDES {
         try (InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
              OutputStream os = new BufferedOutputStream(new FileOutputStream(outputFile))) {
 
-            byte[] buffer = new byte[10240];
-            int bytesRead;
-
-            while ((bytesRead = is.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    os.write(output);
-                }
-            }
-
-            byte[] outputBytes = cipher.doFinal();
-            if (outputBytes != null) {
-                os.write(outputBytes);
-            }
+            BlowFish.writeFile(cipher, is, os);
         }
         return outputFile;
     }

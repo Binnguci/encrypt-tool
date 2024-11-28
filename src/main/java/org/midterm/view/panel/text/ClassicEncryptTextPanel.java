@@ -4,8 +4,8 @@ import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.constant.StringConstant;
 import org.midterm.controller.ClassicController;
 import org.midterm.model.ClassicAlgorithm;
-import org.midterm.service.KeyManager;
 import org.midterm.view.common.CustomColorButton;
+import org.midterm.view.panel.file.SymmetricFilePanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -114,17 +114,13 @@ public class ClassicEncryptTextPanel extends JPanel {
         bComboBox = createComboBox(new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"});
 
         optionsPanel.add(createLabeledPanel("Shift:", shiftField));
-//        optionsPanel.add(createLabeledPanel("Key:", keyField));
         JPanel keyPanel = createKeyPanel(keyField);
         optionsPanel.add(keyPanel, BorderLayout.NORTH);
         optionsPanel.add(createSubstitutionPanel());
         optionsPanel.add(createLabeledPanel("Affine multiplication:", aComboBox));
         optionsPanel.add(createLabeledPanel("Affine shift:", bComboBox));
         optionsPanel.add(hillKeyArea);
-
-        // Initially hide all fields
         hideAllParameterFields();
-
         return optionsPanel;
     }
 
@@ -144,7 +140,7 @@ public class ClassicEncryptTextPanel extends JPanel {
         resetButton.addActionListener(e -> keyField.setText(""));
 
         saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> performSaveKey());
+        saveButton.addActionListener(e -> performSaveKey(keyField));
         loadKeyButton = new JButton("Load");
         loadKeyButton.addActionListener(e -> performLoadKey(keyField));
 
@@ -175,7 +171,7 @@ public class ClassicEncryptTextPanel extends JPanel {
         substitutionPanel.add(resetSubButton);
 
         saveSubButton = new JButton("Save");
-        saveSubButton.addActionListener(e -> performSaveKey());
+        saveSubButton.addActionListener(e -> performSaveKey(substitutionField));
         substitutionPanel.add(saveSubButton);
 
         loadSubKeyButton = new JButton("Load");
@@ -316,6 +312,8 @@ public class ClassicEncryptTextPanel extends JPanel {
     private class AlgorithmSelectionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            keyField.setText("");
+            substitutionField.setText("");
             hideAllParameterFields();
             String selectedAlgorithm = (String) algorithmComboBox.getSelectedItem();
             switch (selectedAlgorithm) {
@@ -335,10 +333,11 @@ public class ClassicEncryptTextPanel extends JPanel {
                     break;
                 case AlgorithmsConstant.SUBSTITUTION:
                     substitutionField.setEnabled(true);
-                    substitutionField.setText(KeyManager.loadKey(selectedAlgorithm));
+                    substitutionField.setEnabled(true);
                     generateSubsButton.setEnabled(true);
                     saveSubButton.setEnabled(true);
                     resetSubButton.setEnabled(true);
+                    loadSubKeyButton.setEnabled(true);
                     break;
                 case AlgorithmsConstant.HILL:
                     hillKeyArea.setEnabled(true);
@@ -376,28 +375,8 @@ public class ClassicEncryptTextPanel extends JPanel {
         return matrix;
     }
 
-    private void performSaveKey() {
-        String algorithm = (String) algorithmComboBox.getSelectedItem();
-        String key = substitutionField.getText();
-        if (algorithm != null && key != null && !key.isEmpty()) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Chọn đường dẫn để lưu Key");
-
-            int userSelection = fileChooser.showSaveDialog(null);
-
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                File fileToSave = fileChooser.getSelectedFile();
-                try (FileWriter writer = new FileWriter(fileToSave)) {
-                    writer.write("Thuật toán: " + algorithm + "\n");
-                    writer.write("Key: " + key + "\n");
-                    JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, "Lỗi khi lưu file: " + ex.getMessage());
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
-        }
+    private void performSaveKey(JTextField keyField) {
+        SymmetricFilePanel.writeKey(keyField, algorithmComboBox);
     }
 
     private void performLoadKey(JTextField jTextField) {

@@ -76,7 +76,6 @@ public class SubstitutionCipher {
         if (!(key instanceof String keyStr)) {
             throw new IllegalArgumentException("Key must be a String.");
         }
-        System.out.println("keyStirng: " + keyStr.length());
         return encryptSubstitution(plainText, keyStr, language);
     }
 

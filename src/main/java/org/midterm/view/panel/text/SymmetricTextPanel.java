@@ -4,7 +4,7 @@ import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.controller.SymmetricTextController;
 import org.midterm.factory.EncryptionConfigFactory;
 import org.midterm.model.SymmetricAlgorithms;
-import org.midterm.service.KeyManager;
+import org.midterm.view.panel.file.SymmetricFilePanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -90,13 +90,12 @@ public class SymmetricTextPanel extends JPanel {
         List<Integer> keySizes = EncryptionConfigFactory.getKeySizes(algorithm);
         keySizeComboBox.setModel(new DefaultComboBoxModel<>(keySizes.toArray(new Integer[0])));
 
-        // Đặt kích thước IV
         int ivSize = EncryptionConfigFactory.getIvSize(algorithm);
         ivSizeLabel.setText("IV Size: " + ivSize);
 
         // Nạp khóa đã lưu (nếu có)
-        String savedKey = KeyManager.loadKey(algorithm);
-        keyField.setText(savedKey != null ? savedKey : "");
+//        String savedKey = KeyManager.loadKey(algorithm);
+//        keyField.setText(savedKey != null ? savedKey : "");
         ivField.setText(""); // Đặt lại trường IV
     }
 
@@ -187,10 +186,10 @@ public class SymmetricTextPanel extends JPanel {
         });
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> performReset(ivField));
-        JButton saveButton = new JButton("Save");
+//        JButton saveButton = new JButton("Save");
         ivPanel.add(generateIvButton);
         ivPanel.add(resetButton);
-        ivPanel.add(saveButton);
+//        ivPanel.add(saveButton);
         return ivPanel;
     }
 
@@ -341,25 +340,7 @@ public class SymmetricTextPanel extends JPanel {
     }
 
     private void performSaveKey(JTextField field) {
-        String algorithm = (String) algorithmComboBox.getSelectedItem();
-        String key = field.getText();
-        if (algorithm != null && key != null && !key.isEmpty()) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Chọn đường dẫn để lưu Key");
-            int userSelection = fileChooser.showSaveDialog(null);
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                File fileToSave = fileChooser.getSelectedFile();
-                try (FileWriter writer = new FileWriter(fileToSave)) {
-                    writer.write("Thuật toán: " + algorithm + "\n");
-                    writer.write("Key: " + key + "\n");
-                    JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, "Lỗi khi lưu file: " + ex.getMessage());
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
-        }
+        SymmetricFilePanel.writeKey(field, algorithmComboBox);
     }
 
     private void performLoadKey(JTextField field) {

@@ -4,12 +4,13 @@ import org.midterm.constant.AlgorithmsConstant;
 import org.midterm.controller.DigitalSignatureController;
 import org.midterm.factory.EncryptionConfigFactory;
 import org.midterm.model.PairKey;
-import org.midterm.service.KeyManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.*;
 import java.util.List;
+import java.util.Objects;
 
 public class DigitalSignatureTextPanel extends JPanel {
     private JTextArea textArea;
@@ -118,11 +119,13 @@ public class DigitalSignatureTextPanel extends JPanel {
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> performReset(publicKeyField, privateKeyField));
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> performSave(publicKeyField, privateKeyField));
-
+        saveButton.addActionListener(e -> performSavePairKey(publicKeyField, privateKeyField));
+        JButton loadButton = new JButton("Load");
+        loadButton.addActionListener(e -> performLoadKey(publicKeyField, privateKeyField));
         keyButtonPanel.add(generateButton);
         keyButtonPanel.add(resetButton);
         keyButtonPanel.add(saveButton);
+        keyButtonPanel.add(loadButton);
         return keyButtonPanel;
     }
 
@@ -131,16 +134,16 @@ public class DigitalSignatureTextPanel extends JPanel {
         privateKeyField.setText("");
     }
 
-    private void performSave(JTextField publicKey, JTextField privateKey) {
-        String algorithm = (String) signatureCombobox.getSelectedItem();
-        Integer keySize = (Integer) keySizeComboBox.getSelectedItem();
-        if (algorithm == null || keySize == null || publicKey.getText().isEmpty() || privateKey.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Failed");
-        } else {
-            KeyManager.saveKeys(algorithm, keySize, publicKey.getText(), privateKey.getText());
-            JOptionPane.showMessageDialog(null, "Key save successfulll");
-        }
-    }
+//    private void performSave(JTextField publicKey, JTextField privateKey) {
+//        String algorithm = (String) signatureCombobox.getSelectedItem();
+//        Integer keySize = (Integer) keySizeComboBox.getSelectedItem();
+//        if (algorithm == null || keySize == null || publicKey.getText().isEmpty() || privateKey.getText().isEmpty()) {
+//            JOptionPane.showMessageDialog(null, "Failed");
+//        } else {
+////            KeyManager.saveKeys(algorithm, keySize, publicKey.getText(), privateKey.getText());
+//            JOptionPane.showMessageDialog(null, "Key save successfulll");
+//        }
+//    }
 
     private JPanel createResultPanel() {
         JPanel resultPanel = new JPanel(new BorderLayout());
@@ -171,20 +174,81 @@ public class DigitalSignatureTextPanel extends JPanel {
         if (algorithm != null) {
             List<Integer> keySizes = EncryptionConfigFactory.getKeyByDigitalSignatureAlgorithm(algorithm);
             keySizeComboBox.setModel(new DefaultComboBoxModel<>(keySizes.toArray(new Integer[0])));
-            loadKey();
         }
     }
-    private void loadKey() {
+//    private void loadKey() {
+//        String algorithm = (String) signatureCombobox.getSelectedItem();
+//        Integer keySize = (Integer) keySizeComboBox.getSelectedItem();
+//        if (keySize != null) {
+////            PairKey key = KeyManager.loadKeys(algorithm, keySize);
+////            publicKeyField.setText(key.getPublicKey());
+////            privateKeyField.setText(key.getPrivateKey());
+//        } else {
+//            System.err.println("Key size is null. No key pair loaded.");
+//            publicKeyField.setText("");
+//            privateKeyField.setText("");
+//        }
+//    }
+
+    private void performSavePairKey(JTextField publicKeyField, JTextField privateKeyField) {
         String algorithm = (String) signatureCombobox.getSelectedItem();
-        Integer keySize = (Integer) keySizeComboBox.getSelectedItem();
-        if (keySize != null) {
-            PairKey key = KeyManager.loadKeys(algorithm, keySize);
-            publicKeyField.setText(key.getPublicKey());
-            privateKeyField.setText(key.getPrivateKey());
+        String keySize = String.valueOf(keySizeComboBox.getSelectedItem());
+        String publicKey = publicKeyField.getText();
+        String privateKey = privateKeyField.getText();
+        if (algorithm != null && (privateKey != null || publicKey != null) && (!publicKey.isEmpty() || !Objects.requireNonNull(privateKey).isEmpty())) {
+            writeKey(algorithm, keySize, publicKey, privateKey);
         } else {
-            System.err.println("Key size is null. No key pair loaded.");
-            publicKeyField.setText("");
-            privateKeyField.setText("");
+            JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
+        }
+    }
+
+    static void writeKey(String algorithm, String keySize, String publicKey, String privateKey) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn đường dẫn để lưu Key");
+        int userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            try (FileWriter writer = new FileWriter(fileToSave)) {
+                writer.write("Thuật toán: " + algorithm + "-" + keySize + "\n");
+                writer.write("PublicKey: " + publicKey + "\n");
+                writer.write("PrivateKey: " + privateKey + "\n");
+                JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi lưu file: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void performLoadKey(JTextField publicKeyField, JTextField privateKeyField) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file chứa Key");
+        int userSelection = fileChooser.showOpenDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToLoad = fileChooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(fileToLoad))) {
+                String line;
+                String publicKey = null;
+                String privateKey = null;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("PublicKey:")) {
+                        publicKey = line.substring("PublicKey:".length()).trim();
+                    } else if (line.startsWith("PrivateKey:")) {
+                        privateKey = line.substring("PrivateKey:".length()).trim();
+                    }
+                }
+
+                if (publicKey != null && privateKey != null) {
+                    publicKeyField.setText(publicKey);
+                    privateKeyField.setText(privateKey);
+                    JOptionPane.showMessageDialog(null, "Key đã được load thành công!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "File không chứa đủ thông tin PublicKey và PrivateKey!");
+                }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi đọc file: " + ex.getMessage());
+            }
         }
     }
 

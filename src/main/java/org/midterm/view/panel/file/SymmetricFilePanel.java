@@ -7,7 +7,6 @@ import org.midterm.controller.SymmetricFileController;
 import org.midterm.controller.SymmetricTextController;
 import org.midterm.factory.EncryptionConfigFactory;
 import org.midterm.model.SymmetricAlgorithms;
-import org.midterm.service.KeyManager;
 import org.midterm.view.common.FileChooser;
 
 import javax.swing.*;
@@ -15,9 +14,10 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
-import java.io.File;
+import java.io.*;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SymmetricFilePanel extends JPanel {
@@ -25,7 +25,10 @@ public class SymmetricFilePanel extends JPanel {
     JComboBox<String> algorithmComboBox, modeComboBox, paddingComboBox;
     JLabel ivSizeLabel;
     JComboBox<Integer> keySizeComboBox, ivSizeCombox;
-    JButton generateIvButton, resetIvButton, generateKeyButton, copyKeyButton, saveKeyButton;
+    JButton resetIvButton;
+    JButton generateKeyButton;
+    JButton copyKeyButton;
+    JButton saveKeyButton;
 
     public static SymmetricFilePanel create() {
         return new SymmetricFilePanel();
@@ -100,7 +103,7 @@ public class SymmetricFilePanel extends JPanel {
             public void drop(DropTargetDropEvent event) {
                 event.acceptDrop(DnDConstants.ACTION_COPY);
                 try {
-                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.get(0) instanceof File file) {
+                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.getFirst() instanceof File file) {
                         filePathField.setText(file.getAbsolutePath());
                     }
                 } catch (Exception e) {
@@ -175,8 +178,8 @@ public class SymmetricFilePanel extends JPanel {
         int ivSize = EncryptionConfigFactory.getIvSize(algorithm);
         ivSizeLabel.setText("IV Size: " + ivSize);
 
-        String savedKey = KeyManager.loadKey(algorithm);
-        keyField.setText(savedKey);
+//        String savedKey = KeyManager.loadKey(algorithm);
+        keyField.setText("");
         ivField.setText("");
     }
 
@@ -224,7 +227,7 @@ public class SymmetricFilePanel extends JPanel {
         ivPanel.add(new JLabel("IV:"));
         ivField.setPreferredSize(new Dimension(300, 25));
         ivPanel.add(ivField);
-        generateIvButton = new JButton("Generate");
+        JButton generateIvButton = new JButton("Generate");
         generateIvButton.addActionListener(e -> {
             try {
                 performGenerateIv();
@@ -234,10 +237,8 @@ public class SymmetricFilePanel extends JPanel {
         });
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> ivField.setText(""));
-//        JButton saveButton = new JButton("Save");
         ivPanel.add(generateIvButton);
         ivPanel.add(resetButton);
-//        ivPanel.add(saveButton);
         return ivPanel;
     }
 
@@ -257,10 +258,13 @@ public class SymmetricFilePanel extends JPanel {
         JButton resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> keyField.setText(""));
         JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(e -> performSave(keyField));
+        saveButton.addActionListener(e -> performSaveKey(keyField));
+        JButton loadButton = new JButton("Load");
+        loadButton.addActionListener(e -> performLoadKey(keyField));
         keyPanel.add(generateButton);
         keyPanel.add(resetButton);
         keyPanel.add(saveButton);
+        keyPanel.add(loadButton);
         return keyPanel;
     }
 
@@ -333,25 +337,73 @@ public class SymmetricFilePanel extends JPanel {
 
     private void performGenerateIv() throws Exception {
         String algorithm = (String) algorithmComboBox.getSelectedItem();
-        String iv = SymmetricTextController.generateIV(algorithm);
+        String iv = SymmetricTextController.generateIV(Objects.requireNonNull(algorithm));
         ivField.setText(iv);
     }
 
-    private void performSave(JTextField field) {
+    private void performSaveKey(JTextField field) {
+        writeKey(field, algorithmComboBox);
+    }
+
+    public static void writeKey(JTextField field, JComboBox<String> algorithmComboBox) {
         String algorithm = (String) algorithmComboBox.getSelectedItem();
         String key = field.getText();
         if (algorithm != null && key != null && !key.isEmpty()) {
-            KeyManager.saveKey(algorithm, key);
-            JOptionPane.showMessageDialog(null, "Key saved successfully!");
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn đường dẫn để lưu Key");
+            int userSelection = fileChooser.showSaveDialog(null);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                try (FileWriter writer = new FileWriter(fileToSave)) {
+                    writer.write("Thuật toán: " + algorithm + "\n");
+                    writer.write("Key: " + key + "\n");
+                    JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "Lỗi khi lưu file: " + ex.getMessage());
+                }
+            }
         } else {
-            JOptionPane.showMessageDialog(null, "Key cannot be empty!");
+            JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
         }
+    }
 
+    private void performLoadKey(JTextField field) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file chứa Key");
+
+        int userSelection = fileChooser.showOpenDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToLoad = fileChooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(fileToLoad))) {
+                String line;
+                String algorithm = null;
+                String key = null;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("Thuật toán: ")) {
+                        algorithm = line.substring(12).trim();
+                    } else if (line.startsWith("Key: ")) {
+                        key = line.substring(5).trim();
+                    }
+                }
+
+                if (algorithm != null && key != null) {
+                    algorithmComboBox.setSelectedItem(algorithm);
+                    field.setText(key);
+                } else {
+                    JOptionPane.showMessageDialog(null, "File không hợp lệ hoặc không đầy đủ thông tin!");
+                }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi đọc file: " + ex.getMessage());
+            }
+        }
     }
 
     private void performGenerateKey() throws Exception {
         String algorithm = (String) algorithmComboBox.getSelectedItem();
-        String keySize = keySizeComboBox.getSelectedItem().toString();
+        String keySize = Objects.requireNonNull(keySizeComboBox.getSelectedItem()).toString();
+        assert algorithm != null;
         String key = SymmetricTextController.generateKey(algorithm, keySize);
         keyField.setText(key);
     }

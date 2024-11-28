@@ -12,7 +12,7 @@ import java.util.Base64;
 
 public class BlowFish {
 
-    public static String generateKey(int keySize) throws NoSuchAlgorithmException {
+    public String generateKey(int keySize) throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
         keyGenerator.init(keySize);
         SecretKey secretKey = keyGenerator.generateKey();
@@ -45,7 +45,7 @@ public class BlowFish {
         }
     }
 
-    private static Cipher getCipherInstance(String mode, String padding, String secretKeyBase64, String base64Iv, String transformation)
+    private static Cipher getCipherInstance(String mode, String secretKeyBase64, String base64Iv, String transformation)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException {
         SecretKey secretKey = convertBase64ToKey(secretKeyBase64);
         Cipher cipher = Cipher.getInstance(transformation);
@@ -65,7 +65,7 @@ public class BlowFish {
         checkIvNotNullOrEmpty(base64Iv, mode);
 
         String transformation = "Blowfish/" + mode + "/" + padding;
-        Cipher cipher = getCipherInstance(mode, padding, secretKeyBase64, base64Iv, transformation);
+        Cipher cipher = getCipherInstance(mode, secretKeyBase64, base64Iv, transformation);
 
         byte[] cipherText = cipher.doFinal(plainText.getBytes());
         return Base64.getEncoder().encodeToString(cipherText);
@@ -128,21 +128,25 @@ public class BlowFish {
                 os.write(iv.getIV());
             }
 
-            byte[] buffer = new byte[10240];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    os.write(output);
-                }
-            }
-
-            byte[] outputBytes = cipher.doFinal();
-            if (outputBytes != null) {
-                os.write(outputBytes);
-            }
+            writeFile(cipher, is, os);
         }
         return outputFile;
+    }
+
+    static void writeFile(Cipher cipher, InputStream is, OutputStream os) throws IOException, IllegalBlockSizeException, BadPaddingException {
+        byte[] buffer = new byte[10240];
+        int bytesRead;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            byte[] output = cipher.update(buffer, 0, bytesRead);
+            if (output != null) {
+                os.write(output);
+            }
+        }
+
+        byte[] outputBytes = cipher.doFinal();
+        if (outputBytes != null) {
+            os.write(outputBytes);
+        }
     }
 
     private String generateOutputFilePath(File inputFileObj, String suffix) {
