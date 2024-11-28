@@ -1,37 +1,123 @@
 package org.midterm.view.panel.file;
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-import org.midterm.view.common.CustomColorButton;
+import org.midterm.constant.AlgorithmsConstant;
+import org.midterm.controller.DigitalSignatureFileController;
+import org.midterm.controller.DigitalSignatureTextController;
+import org.midterm.factory.EncryptionConfigFactory;
+import org.midterm.model.PairKey;
+import org.midterm.view.common.FileChooser;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
-import java.io.File;
+import java.io.*;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DigitalSignatureFilePanel extends JPanel {
-    private JTextField filePathField;
-    private JTextField resultFilePathField;
-    private JComboBox<String> algorithmComboBox, modeComboBox, paddingComboBox;
-    private JTextField keyField;
+    private JTextArea textArea;
+    private JComboBox<String> signatureCombobox;
+    private JTextField publicKeyField, privateKeyField, filePathField;
+    private JTextArea resultArea;
+    private JComboBox<Integer> keySizeComboBox;
 
     public DigitalSignatureFilePanel() {
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(0, 0));
         setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(211, 211, 211)));
+        setBackground(Color.WHITE);
 
         JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(Color.WHITE);
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
+        mainPanel.add(createDropPanel());
+        mainPanel.add(createFilePathPanel());
+        mainPanel.add(createAlgorithmSelectionPanel());
+        mainPanel.add(createEncryptionConfigPanel());
+        mainPanel.add(createResultPanel());
+        mainPanel.add(createActionButtons());
+
+        JPanel paddedPanel = new JPanel(new BorderLayout());
+        paddedPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        paddedPanel.add(mainPanel, BorderLayout.CENTER);
+
+        add(paddedPanel, BorderLayout.NORTH);
+        updateEncryptionConfig();
+    }
+
+    public static DigitalSignatureFilePanel create() {
+        return new DigitalSignatureFilePanel();
+    }
+
+    private JPanel createAlgorithmSelectionPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBorder(BorderFactory.createTitledBorder("Select Signature"));
+
+        String[] algorithms = {
+                AlgorithmsConstant.SHA1WITHDSA,
+                AlgorithmsConstant.SHA256WITHDSA,
+                AlgorithmsConstant.SHA1WITHRSA,
+                AlgorithmsConstant.SHA256WITHRSA,
+        };
+        signatureCombobox = new JComboBox<>(algorithms);
+        signatureCombobox.addActionListener(e -> updateEncryptionConfig());
+
+        panel.add(new JLabel("Signature:"));
+        panel.add(signatureCombobox);
+        return panel;
+    }
+
+    private JPanel createEncryptionConfigPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createTitledBorder("Encryption Configuration"));
+
+        JPanel keySizePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        keySizePanel.add(new JLabel("Key Size:"));
+        keySizeComboBox = new JComboBox<>(new Integer[]{2048, 4096});
+        keySizePanel.add(keySizeComboBox);
+
+        publicKeyField = new JTextField(30);
+        publicKeyField.setEnabled(false);
+        privateKeyField = new JTextField(30);
+        privateKeyField.setEnabled(false);
+        JPanel publicKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        publicKeyPanel.add(new JLabel("Public Key:"));
+        publicKeyPanel.add(publicKeyField);
+
+        JPanel privateKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        privateKeyPanel.add(new JLabel("Private Key:"));
+        privateKeyPanel.add(privateKeyField);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton generateButton = new JButton("Generate Key");
+        generateButton.addActionListener(e -> generateKey());
+        buttonPanel.add(generateButton);
+
+        panel.add(keySizePanel);
+        panel.add(publicKeyPanel);
+        panel.add(privateKeyPanel);
+        panel.add(createButtonKeyPanel());
+        return panel;
+    }
+
+    private JPanel createDropPanel() {
         JPanel dropPanel = new JPanel(new BorderLayout());
         dropPanel.setPreferredSize(new Dimension(500, 150));
         dropPanel.setBackground(Color.WHITE);
         dropPanel.setBorder(BorderFactory.createTitledBorder("Drag and Drop File Here"));
 
+        JLabel dropLabel = createDropLabel();
+        dropPanel.add(dropLabel, BorderLayout.CENTER);
+
+        setupDropTarget(dropPanel);
+        return dropPanel;
+    }
+
+    private JLabel createDropLabel() {
         JLabel dropLabel = new JLabel("Drag & Drop your file here", SwingConstants.CENTER);
         URL iconURL = getClass().getResource("/img/icons8-file-64.png");
         if (iconURL != null) {
@@ -39,18 +125,18 @@ public class DigitalSignatureFilePanel extends JPanel {
         } else {
             System.err.println("Warning: Icon file not found at /img/icons8-file-64.png");
         }
-
         dropLabel.setHorizontalTextPosition(SwingConstants.CENTER);
         dropLabel.setVerticalTextPosition(SwingConstants.BOTTOM);
+        return dropLabel;
+    }
 
-        dropPanel.add(dropLabel, BorderLayout.CENTER);
-
+    private void setupDropTarget(JPanel dropPanel) {
         new DropTarget(dropPanel, new DropTargetListener() {
             @Override
             public void drop(DropTargetDropEvent event) {
                 event.acceptDrop(DnDConstants.ACTION_COPY);
                 try {
-                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.getFirst() instanceof File file) {
+                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.get(0) instanceof File file) {
                         filePathField.setText(file.getAbsolutePath());
                     }
                 } catch (Exception e) {
@@ -70,110 +156,195 @@ public class DigitalSignatureFilePanel extends JPanel {
             public void dropActionChanged(DropTargetDragEvent event) {
             }
         });
+    }
 
-
-        mainPanel.add(dropPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
-
+    private JPanel createFilePathPanel() {
         JPanel filePathPanel = new JPanel(new BorderLayout());
         filePathField = new JTextField();
         filePathField.setEditable(true);
         filePathField.setBorder(BorderFactory.createTitledBorder("File Path"));
-        filePathPanel.setBackground(Color.WHITE);
+
+        JButton browseBtn = createBrowseButton();
         filePathPanel.add(filePathField, BorderLayout.CENTER);
+        filePathPanel.add(browseBtn, BorderLayout.EAST);
+        return filePathPanel;
+    }
 
-        mainPanel.add(filePathPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
+    private JButton createBrowseButton() {
+        JButton browseBtn = new JButton("Browse");
+        FileChooser.addBrowseButtonListener(browseBtn, filePathField, this);
+        return browseBtn;
+    }
 
-        JPanel optionsPanel = new JPanel();
-        optionsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-
-        optionsPanel.add(new JLabel("Algorithm:"));
-        algorithmComboBox = new JComboBox<>(new String[]{"AES", "DES", "Blowfish", "Hill", "Affine"});
-        optionsPanel.add(algorithmComboBox);
-
-        optionsPanel.add(new JLabel("Mode:"));
-        modeComboBox = new JComboBox<>(new String[]{"ECB", "CBC", "CFB"});
-        optionsPanel.add(modeComboBox);
-
-        optionsPanel.add(new JLabel("Padding:"));
-        paddingComboBox = new JComboBox<>(new String[]{"PKCS5", "NoPadding", "ISO10126"});
-        optionsPanel.add(paddingComboBox);
-
-        mainPanel.add(optionsPanel);
-
-        JPanel keyPanel = new JPanel(new BorderLayout());
-        keyField = new JTextField();
-        keyField.setEditable(true);
-        keyField.setBorder(BorderFactory.createTitledBorder("Key"));
-        keyPanel.add(keyField, BorderLayout.CENTER);
-        JPanel keyButtonPanel = new JPanel(new BorderLayout());
-        JButton generateKeyButton = new JButton("Generate Key");
-        JButton copyKeyButton = new JButton("Copy");
-        CustomColorButton.setButtonPressColor(generateKeyButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(copyKeyButton, "#F26680", Color.WHITE);
-        keyButtonPanel.add(generateKeyButton, BorderLayout.WEST);
-        keyButtonPanel.add(copyKeyButton, BorderLayout.EAST);
-        keyPanel.add(keyButtonPanel, BorderLayout.EAST);
-        mainPanel.add(keyPanel);
-        mainPanel.add(Box.createVerticalStrut(10));
-
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton encryptButton = new JButton("Encrypt");
-        JButton decryptButton = new JButton("Decrypt");
-        CustomColorButton.setButtonPressColor(encryptButton, "#F26680", Color.WHITE);
-        CustomColorButton.setButtonPressColor(decryptButton, "#F26680", Color.WHITE);
-        buttonPanel.add(encryptButton);
-        buttonPanel.add(decryptButton);
-        mainPanel.add(buttonPanel);
-
-        resultFilePathField = new JTextField();
-        resultFilePathField.setEditable(false);
-        resultFilePathField.setBackground(Color.WHITE);
-        resultFilePathField.setBorder(BorderFactory.createTitledBorder("Result File Path"));
-        mainPanel.add(resultFilePathField);
-        mainPanel.add(Box.createVerticalStrut(20));
-
+    private JPanel createButtonKeyPanel() {
+        JPanel keyButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton generateButton = new JButton("Generate");
+        generateButton.addActionListener(e -> {
+            try {
+                generateKey();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         JButton resetButton = new JButton("Reset");
-        resetButton.addActionListener(e -> resetFields());
-        resetButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        mainPanel.add(resetButton);
-        mainPanel.add(Box.createVerticalStrut(10));
-
-        encryptButton.addActionListener(e -> updateResultFilePath(true));
-        decryptButton.addActionListener(e -> updateResultFilePath(false));
-
-        JPanel paddedPanel = new JPanel(new BorderLayout());
-        paddedPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        paddedPanel.add(mainPanel, BorderLayout.NORTH);
-
-        add(paddedPanel, BorderLayout.NORTH);
+        resetButton.addActionListener(e -> performReset(publicKeyField, privateKeyField));
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> performSavePairKey(publicKeyField, privateKeyField));
+        JButton loadButton = new JButton("Load");
+        loadButton.addActionListener(e -> performLoadKey(publicKeyField, privateKeyField));
+        keyButtonPanel.add(generateButton);
+        keyButtonPanel.add(resetButton);
+        keyButtonPanel.add(saveButton);
+        keyButtonPanel.add(loadButton);
+        return keyButtonPanel;
     }
 
-    private void updateResultFilePath(boolean isEncrypt) {
-        String originalFilePath = filePathField.getText();
-        if (originalFilePath.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please drop a file first!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    private void performReset(JTextField publicKeyField, JTextField privateKeyField) {
+        publicKeyField.setText("");
+        privateKeyField.setText("");
+    }
 
-        String resultFilePath;
-        if (isEncrypt) {
-            resultFilePath = originalFilePath + "-encrypt";
+    private JPanel createResultPanel() {
+        JPanel resultPanel = new JPanel(new BorderLayout());
+        resultArea = new JTextArea(5, 30);
+        resultArea.setEditable(false);
+        resultPanel.setBorder(BorderFactory.createTitledBorder("Signature/Verification Result"));
+        resultPanel.add(new JScrollPane(resultArea), BorderLayout.CENTER);
+        return resultPanel;
+    }
+
+    private JPanel createActionButtons() {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        JButton signButton = new JButton("Sign");
+        signButton.addActionListener(e -> signData());
+        buttonPanel.add(signButton);
+
+        JButton verifyButton = new JButton("Verify");
+        verifyButton.addActionListener(e -> verifySignature());
+        buttonPanel.add(verifyButton);
+
+        return buttonPanel;
+    }
+
+    private void updateEncryptionConfig() {
+        String algorithm = (String) signatureCombobox.getSelectedItem();
+
+        if (algorithm != null) {
+            List<Integer> keySizes = EncryptionConfigFactory.getKeyByDigitalSignatureAlgorithm(algorithm);
+            keySizeComboBox.setModel(new DefaultComboBoxModel<>(keySizes.toArray(new Integer[0])));
+        }
+    }
+
+    private void performSavePairKey(JTextField publicKeyField, JTextField privateKeyField) {
+        String algorithm = (String) signatureCombobox.getSelectedItem();
+        String keySize = String.valueOf(keySizeComboBox.getSelectedItem());
+        String publicKey = publicKeyField.getText();
+        String privateKey = privateKeyField.getText();
+        if (algorithm != null && (privateKey != null || publicKey != null) && (!publicKey.isEmpty() || !Objects.requireNonNull(privateKey).isEmpty())) {
+            writeKey(algorithm, keySize, publicKey, privateKey);
         } else {
-            resultFilePath = originalFilePath + "-decrypt";
+            JOptionPane.showMessageDialog(null, "Key hoặc thuật toán không hợp lệ!");
         }
-
-        resultFilePathField.setText(resultFilePath);
     }
 
-    private void resetFields() {
-        filePathField.setText("");
-        resultFilePathField.setText("");
-        algorithmComboBox.setSelectedIndex(0);
-        modeComboBox.setSelectedIndex(0);
-        paddingComboBox.setSelectedIndex(0);
-        keyField.setText("");
+    static void writeKey(String algorithm, String keySize, String publicKey, String privateKey) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn đường dẫn để lưu Key");
+        int userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            try (FileWriter writer = new FileWriter(fileToSave)) {
+                writer.write("Thuật toán: " + algorithm + "-" + keySize + "\n");
+                writer.write("PublicKey: " + publicKey + "\n");
+                writer.write("PrivateKey: " + privateKey + "\n");
+                JOptionPane.showMessageDialog(null, "Key đã được lưu thành công!");
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi lưu file: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void performLoadKey(JTextField publicKeyField, JTextField privateKeyField) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file chứa Key");
+        int userSelection = fileChooser.showOpenDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToLoad = fileChooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(fileToLoad))) {
+                String line;
+                String publicKey = null;
+                String privateKey = null;
+
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("PublicKey:")) {
+                        publicKey = line.substring("PublicKey:".length()).trim();
+                    } else if (line.startsWith("PrivateKey:")) {
+                        privateKey = line.substring("PrivateKey:".length()).trim();
+                    }
+                }
+
+                if (publicKey != null && privateKey != null) {
+                    publicKeyField.setText(publicKey);
+                    privateKeyField.setText(privateKey);
+                    JOptionPane.showMessageDialog(null, "Key đã được load thành công!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "File không chứa đủ thông tin PublicKey và PrivateKey!");
+                }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi đọc file: " + ex.getMessage());
+            }
+        }
+    }
+
+    private void generateKey() {
+        try {
+            int keySize = (int) keySizeComboBox.getSelectedItem();
+            String algorithm = (String) signatureCombobox.getSelectedItem();
+
+            PairKey pairKey = DigitalSignatureTextController.generatePairKey(keySize, algorithm);
+            publicKeyField.setText(pairKey.getPublicKey());
+            privateKeyField.setText(pairKey.getPrivateKey());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error generating keys: " + e.getMessage());
+        }
+    }
+
+    private void signData() {
+        try {
+            String algorithm = (String) signatureCombobox.getSelectedItem();
+            String file = filePathField.getText();
+            String privateKey = privateKeyField.getText();
+
+            if (file.isEmpty() || privateKey.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Text and Private Key cannot be empty!");
+                return;
+            }
+
+            String signature = DigitalSignatureFileController.signFile(file, privateKey, algorithm);
+            resultArea.setText(signature);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error signing data: " + e.getMessage());
+        }
+    }
+
+    private void verifySignature() {
+        try {
+            String algorithm = (String) signatureCombobox.getSelectedItem();
+            String file = filePathField.getText();
+            String signature = resultArea.getText();
+            String publicKey = publicKeyField.getText();
+
+            if (file.isEmpty() || signature.isEmpty() || publicKey.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Text, Signature, and Public Key cannot be empty!");
+                return;
+            }
+
+            boolean isValid = DigitalSignatureTextController.verifySignature(file, signature, publicKey, algorithm);
+            JOptionPane.showMessageDialog(this, isValid ? "Signature is valid!" : "Signature is invalid!");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error verifying signature: " + e.getMessage());
+        }
     }
 }

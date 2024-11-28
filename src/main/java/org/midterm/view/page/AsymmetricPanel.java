@@ -2,17 +2,16 @@ package org.midterm.view.page;
 
 import org.midterm.constant.OptionConstant;
 import org.midterm.view.panel.EncryptionTypeToolBar;
-import org.midterm.view.panel.file.DigitalSignatureFilePanel;
-import org.midterm.view.panel.text.DigitalSignatureTextPanel;
+import org.midterm.view.panel.text.AsymmetricTextPanel;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class DigitalSignaturePanel extends JPanel {
+public class AsymmetricPanel extends JPanel {
     CardLayout cardLayout = new CardLayout();
     JPanel contentPanel = new JPanel(cardLayout);
 
-    public DigitalSignaturePanel() {
+    public AsymmetricPanel() {
         setLayout(new BorderLayout());
 
         EncryptionTypeToolBar toolBar = new EncryptionTypeToolBar();
@@ -24,11 +23,9 @@ public class DigitalSignaturePanel extends JPanel {
             }
         });
 
-        DigitalSignatureTextPanel digitalSignatureTextPanel = DigitalSignatureTextPanel.create();
-        DigitalSignatureFilePanel digitalSignatureFilePanel = DigitalSignatureFilePanel.create();
+        AsymmetricTextPanel asymmetricTextPanel = AsymmetricTextPanel.create();
 
-        contentPanel.add(digitalSignatureTextPanel, OptionConstant.TEXT_PANEL);
-        contentPanel.add(digitalSignatureFilePanel, OptionConstant.FILE_PANEL);
+        contentPanel.add(asymmetricTextPanel, OptionConstant.TEXT_PANEL);
 
         add(toolBar, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
