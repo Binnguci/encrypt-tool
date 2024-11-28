@@ -75,7 +75,9 @@ public class DigitalSignatureTextPanel extends JPanel {
         keySizePanel.add(keySizeComboBox);
 
         publicKeyField = new JTextField(30);
+        publicKeyField.setEnabled(false);
         privateKeyField = new JTextField(30);
+        privateKeyField.setEnabled(false);
 
         JPanel publicKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         publicKeyPanel.add(new JLabel("Public Key:"));

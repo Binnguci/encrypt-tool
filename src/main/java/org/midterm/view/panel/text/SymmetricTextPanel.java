@@ -330,7 +330,6 @@ public class SymmetricTextPanel extends JPanel {
             switch (selectedAlgorithm) {
                 case AlgorithmsConstant.RC4:
                     ivField.setEnabled(false);
-                case null:
                 default:
                     break;
             }

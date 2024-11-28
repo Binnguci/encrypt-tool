@@ -1,6 +1,7 @@
 package org.midterm.view.panel.file;
 
 import org.midterm.constant.AlgorithmsConstant;
+import org.midterm.controller.DigitalSignatureFileController;
 import org.midterm.controller.DigitalSignatureTextController;
 import org.midterm.factory.EncryptionConfigFactory;
 import org.midterm.model.PairKey;
@@ -80,8 +81,9 @@ public class DigitalSignatureFilePanel extends JPanel {
         keySizePanel.add(keySizeComboBox);
 
         publicKeyField = new JTextField(30);
+        publicKeyField.setEnabled(false);
         privateKeyField = new JTextField(30);
-
+        privateKeyField.setEnabled(false);
         JPanel publicKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         publicKeyPanel.add(new JLabel("Public Key:"));
         publicKeyPanel.add(publicKeyField);
@@ -98,7 +100,6 @@ public class DigitalSignatureFilePanel extends JPanel {
         panel.add(keySizePanel);
         panel.add(publicKeyPanel);
         panel.add(privateKeyPanel);
-//        panel.add(buttonPanel);
         panel.add(createButtonKeyPanel());
         return panel;
     }
@@ -135,7 +136,7 @@ public class DigitalSignatureFilePanel extends JPanel {
             public void drop(DropTargetDropEvent event) {
                 event.acceptDrop(DnDConstants.ACTION_COPY);
                 try {
-                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.getFirst() instanceof File file) {
+                    if (event.getTransferable().getTransferData(DataFlavor.javaFileListFlavor) instanceof List<?> files && files.get(0) instanceof File file) {
                         filePathField.setText(file.getAbsolutePath());
                     }
                 } catch (Exception e) {
@@ -313,15 +314,15 @@ public class DigitalSignatureFilePanel extends JPanel {
     private void signData() {
         try {
             String algorithm = (String) signatureCombobox.getSelectedItem();
-            String text = textArea.getText();
+            String file = filePathField.getText();
             String privateKey = privateKeyField.getText();
 
-            if (text.isEmpty() || privateKey.isEmpty()) {
+            if (file.isEmpty() || privateKey.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Text and Private Key cannot be empty!");
                 return;
             }
 
-            String signature = DigitalSignatureTextController.signData(text, privateKey, algorithm);
+            String signature = DigitalSignatureFileController.signFile(file, privateKey, algorithm);
             resultArea.setText(signature);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error signing data: " + e.getMessage());
@@ -331,16 +332,16 @@ public class DigitalSignatureFilePanel extends JPanel {
     private void verifySignature() {
         try {
             String algorithm = (String) signatureCombobox.getSelectedItem();
-            String text = textArea.getText();
+            String file = filePathField.getText();
             String signature = resultArea.getText();
             String publicKey = publicKeyField.getText();
 
-            if (text.isEmpty() || signature.isEmpty() || publicKey.isEmpty()) {
+            if (file.isEmpty() || signature.isEmpty() || publicKey.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Text, Signature, and Public Key cannot be empty!");
                 return;
             }
 
-            boolean isValid = DigitalSignatureTextController.verifySignature(text, signature, publicKey, algorithm);
+            boolean isValid = DigitalSignatureTextController.verifySignature(file, signature, publicKey, algorithm);
             JOptionPane.showMessageDialog(this, isValid ? "Signature is valid!" : "Signature is invalid!");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error verifying signature: " + e.getMessage());

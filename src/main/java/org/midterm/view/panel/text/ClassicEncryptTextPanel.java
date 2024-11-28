@@ -342,7 +342,6 @@ public class ClassicEncryptTextPanel extends JPanel {
                 case AlgorithmsConstant.HILL:
                     hillKeyArea.setEnabled(true);
                     break;
-                case null:
                 default:
                     break;
             }
@@ -366,7 +365,7 @@ public class ClassicEncryptTextPanel extends JPanel {
             }
             matrix.add(rowValues);
         }
-        int rowSize = matrix.getFirst().size();
+        int rowSize = matrix.get(0).size();
         for (List<Integer> row : matrix) {
             if (row.size() != rowSize) {
                 throw new IllegalArgumentException("Matrix is not square!");

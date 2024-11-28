@@ -2,6 +2,10 @@ package org.midterm.service.encryption.digitalsignature;
 
 import org.midterm.model.PairKey;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -36,6 +40,21 @@ public class DSA {
         return Base64.getEncoder().encodeToString(digitalSignature);
     }
 
+    public String signFile(String path, String privateKeyBase64, String algorithm) throws Exception {
+        File file = new File(path);
+        byte[] fileBytes = readFileToBytes(file);
+        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
+        PrivateKey privateKey = KeyFactory.getInstance("DSA")
+                .generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+
+        Signature signature = Signature.getInstance(algorithm);
+        signature.initSign(privateKey);
+        signature.update(fileBytes);
+        byte[] digitalSignature = signature.sign();
+
+        return Base64.getEncoder().encodeToString(digitalSignature);
+    }
+
 
     public boolean verifySignature(String data, String signatureBase64, String publicKeyBase64, String algorithm) throws Exception {
         byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
@@ -48,6 +67,34 @@ public class DSA {
         byte[] digitalSignature = Base64.getDecoder().decode(signatureBase64);
 
         return signature.verify(digitalSignature);
+    }
+
+    public boolean verifyFileSignature(String path, String signatureBase64, String publicKeyBase64, String algorithm) throws Exception {
+        File file = new File(path);
+        byte[] fileBytes = readFileToBytes(file);
+        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyBase64);
+        PublicKey publicKey = KeyFactory.getInstance("DSA")
+                .generatePublic(new X509EncodedKeySpec(publicKeyBytes));
+
+        Signature signature = Signature.getInstance(algorithm);
+        signature.initVerify(publicKey);
+        signature.update(fileBytes);
+        byte[] digitalSignature = Base64.getDecoder().decode(signatureBase64);
+
+        return signature.verify(digitalSignature);
+    }
+
+
+    private byte[] readFileToBytes(File file) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file);
+             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                bos.write(buffer, 0, bytesRead);
+            }
+            return bos.toByteArray();
+        }
     }
 
     public static void main(String[] args) {
