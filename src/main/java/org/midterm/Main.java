@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -191,6 +192,7 @@ public class Main extends JFrame {
      */
     public static void main(String[] args) {
         UIManagerSetup.applyFlatLafTheme();
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         SwingUtilities.invokeLater(Main::new);
     }
 }

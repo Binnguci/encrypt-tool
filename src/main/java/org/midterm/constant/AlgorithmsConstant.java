@@ -14,6 +14,8 @@ public class AlgorithmsConstant {
     public static final String BLOWFISH = "Blowfish";
     public static final String TRIPLEDES = "3DES";
     public static final String RC4 = "RC4";
+    public static final String IDEA = "IDEA";
+    public static final String SEED = "SEED";
     //hash
     public static final String MD5 = "MD5";
     public static final String SHA1 = "SHA-1";

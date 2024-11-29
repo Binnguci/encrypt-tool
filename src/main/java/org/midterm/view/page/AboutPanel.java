@@ -80,7 +80,6 @@ public class AboutPanel extends JPanel {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        // Create text area
         JTextArea textArea = new JTextArea(StringConstant.ABOUT_TEXT);
         textArea.setEditable(false);
         textArea.setWrapStyleWord(true);
@@ -88,20 +87,14 @@ public class AboutPanel extends JPanel {
         textArea.setFont(new Font("Arial", Font.PLAIN, 14));
         textArea.setBackground(getBackground());
 
-        // Add scroll pane
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         scrollPane.setPreferredSize(new Dimension(380, 200));
         contentPanel.add(scrollPane);
 
-        // Add author label
         JLabel authorLabel = new JLabel("Author: Binnguci", JLabel.CENTER);
         authorLabel.setFont(new Font("Arial", Font.ITALIC, 14));
         contentPanel.add(authorLabel);
-
-        // Add icon with error handling
-//        JLabel iconLabel = createIconLabel();
-//        contentPanel.add(iconLabel);
 
         return contentPanel;
     }
@@ -122,7 +115,7 @@ public class AboutPanel extends JPanel {
 
     private JPanel createFooterPanel() {
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JLabel footerLabel = new JLabel("© 2024 Encrypt-Decrypt Tool. All rights reserved.");
+        JLabel footerLabel = new JLabel("© 2024 Cryptography Tool. All rights reserved. I'm so tired");
         footerLabel.setFont(new Font("Arial", Font.ITALIC, 12));
         footerPanel.add(footerLabel);
         return footerPanel;

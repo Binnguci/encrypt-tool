@@ -53,18 +53,6 @@ public class HashTextPanel extends JPanel {
         add(paddedPanel, BorderLayout.NORTH);
     }
 
-
-//    private JPanel createLanguagePanel() {
-//        JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-//        languageComboBox = new JComboBox<>(new String[]{
-//                StringConstant.LANGUAGE_ENGLISH,
-//                StringConstant.LANGUAGE_VIETNAMESE
-//        });
-//        languagePanel.add(new JLabel("Language:"));
-//        languagePanel.add(languageComboBox);
-//        return languagePanel;
-//    }
-
     private JPanel createTextInputPanel() {
         JPanel hashTextInputPanel = new JPanel();
         hashTextInputPanel.setLayout(new BorderLayout());
@@ -154,11 +142,12 @@ public class HashTextPanel extends JPanel {
 
     private JPanel createButtonEndPanel() {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton copyButton = new JButton("Copy");
         JButton resetButton = new JButton("Reset");
-        CustomColorButton.setButtonPressColor(copyButton, "#0583F2", Color.WHITE);
+        resetButton.addActionListener(e -> {
+            textArea.setText("");
+            resultArea.setText("");
+        });
         CustomColorButton.setButtonPressColor(resetButton, "#0583F2", Color.WHITE);
-        buttonPanel.add(copyButton);
         buttonPanel.add(resetButton);
         return buttonPanel;
     }

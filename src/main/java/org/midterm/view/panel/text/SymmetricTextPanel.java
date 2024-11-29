@@ -62,7 +62,13 @@ public class SymmetricTextPanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBorder(BorderFactory.createTitledBorder("Select Algorithm"));
 
-        String[] algorithms = {AlgorithmsConstant.BLOWFISH, AlgorithmsConstant.AES, AlgorithmsConstant.DES,  AlgorithmsConstant.TRIPLEDES, AlgorithmsConstant.RC4};
+        String[] algorithms = {
+                AlgorithmsConstant.BLOWFISH,
+                AlgorithmsConstant.AES, AlgorithmsConstant.DES,
+                AlgorithmsConstant.TRIPLEDES,
+                AlgorithmsConstant.RC4,
+        AlgorithmsConstant.SEED,
+        AlgorithmsConstant.IDEA};
         algorithmComboBox = new JComboBox<>(algorithms);
         algorithmComboBox.addActionListener(e ->
                 updateEncryptionConfig());

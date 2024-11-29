@@ -29,6 +29,10 @@ public class SymmetricTextController {
                 RC4 rc4 = RC4.create();
                 yield rc4.generateKey();
             }
+            case AlgorithmsConstant.SEED, AlgorithmsConstant.IDEA -> {
+                LibSymetricCipher libSymetricCipher = new LibSymetricCipher();
+                yield libSymetricCipher.generateKey(algorithm);
+            }
             default -> result;
         };
         return result;
@@ -52,6 +56,10 @@ public class SymmetricTextController {
             case AlgorithmsConstant.TRIPLEDES:
                 TripleDES tripleDes = TripleDES.create();
                 result = tripleDes.generateIv();
+                break;
+            case AlgorithmsConstant.SEED, AlgorithmsConstant.IDEA:
+                LibSymetricCipher libSymetricCipher = new LibSymetricCipher();
+                result = libSymetricCipher.generateIv(algorithm);
                 break;
             default:
                 break;
@@ -88,6 +96,10 @@ public class SymmetricTextController {
                 RC4 rc4 = RC4.create();
                 result = rc4.encryptText(key, inputText);
                 break;
+            case AlgorithmsConstant.SEED, AlgorithmsConstant.IDEA:
+                LibSymetricCipher libSymetricCipher = new LibSymetricCipher();
+                result = libSymetricCipher.encryptText(iv, key, inputText, algorithm, mode, padding);
+                break;
             default:
                 break;
         }
@@ -122,6 +134,10 @@ public class SymmetricTextController {
             case AlgorithmsConstant.RC4:
                 RC4 rc4 = RC4.create();
                 result = rc4.decryptText(key, inputText);
+                break;
+            case AlgorithmsConstant.SEED, AlgorithmsConstant.IDEA:
+                LibSymetricCipher libSymetricCipher = new LibSymetricCipher();
+                result = libSymetricCipher.decryptText(iv, key, inputText, algorithm, mode, padding);
                 break;
             default:
                 break;

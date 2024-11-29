@@ -13,7 +13,9 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.DES, Arrays.asList("CBC", "ECB", "CFB", "OFB", "PCBC", "CTR", "CTS"),
             AlgorithmsConstant.BLOWFISH, Arrays.asList("CBC", "ECB", "CFB", "OFB", "PCBC", "CTR", "CTS"),
             AlgorithmsConstant.TRIPLEDES, Arrays.asList("CBC", "ECB", "CFB", "OFB", "PCBC"),
-            AlgorithmsConstant.RC4, List.of("None")
+            AlgorithmsConstant.RC4, List.of("None"),
+            AlgorithmsConstant.SEED, List.of("CBC"),
+            AlgorithmsConstant.IDEA, List.of("CBC", "CFB")
     );
 
     private static final Map<String, List<String>> MODES_BY_ASYMMETRIC_ALGORITHM = Map.of(
@@ -57,6 +59,14 @@ public class EncryptionConfigFactory {
             ),
             AlgorithmsConstant.RC4, Map.of(
                     "None", Arrays.asList("PKCS1Padding", "OAEPWithSHA-256AndMGF1Padding")
+            ),
+            AlgorithmsConstant.SEED, Map.of(
+                    "CBC", Arrays.asList("PKCS5Padding", "ISO10126Padding")
+            ),
+            AlgorithmsConstant.IDEA, Map.of(
+                    "CBC", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding"),
+                    "CFB", Arrays.asList("PKCS5Padding", "NoPadding", "ISO10126Padding")
+
             )
     );
 
@@ -72,7 +82,9 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.DES, List.of(56),
             AlgorithmsConstant.BLOWFISH, Arrays.asList(32, 64, 128, 192, 256),
             AlgorithmsConstant.TRIPLEDES, Arrays.asList(112, 168),
-            AlgorithmsConstant.RC4, List.of(128)
+            AlgorithmsConstant.RC4, List.of(128),
+            AlgorithmsConstant.SEED, List.of(128),
+            AlgorithmsConstant.IDEA, List.of(128)
     );
 
     private static final Map<String, List<Integer>> KEY_SIZES_BY_ASYMMETRIC_ALGORITHM = Map.of(
@@ -92,7 +104,8 @@ public class EncryptionConfigFactory {
             AlgorithmsConstant.DES, 8,
             AlgorithmsConstant.BLOWFISH, 8,
             AlgorithmsConstant.TRIPLEDES, 8,
-            AlgorithmsConstant.RC4, 0
+            AlgorithmsConstant.RC4, 0,
+            AlgorithmsConstant.SEED, 16
     );
 
     public static List<String> getModes(String algorithm) {
